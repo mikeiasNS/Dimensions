@@ -164,6 +164,7 @@ function core.buildMap(data)
 	setVariable("scaledTileWidth", data.stats.tileWidth)
 	setVariable("scaledTileHeight", data.stats.tileHeight)
 
+	
 	------------------------------------------------------------------------------
 	-- Map Object
 	------------------------------------------------------------------------------
@@ -277,7 +278,6 @@ function core.buildMap(data)
 		x, y = x - 0.5, y - 0.5
 		return (x * map.data.tileWidth), (y * map.data.tileHeight)
 	end
-
 	map.tilesToLocalPixels = map.tilesToPixels
 
 	function map.tilesToContentPixels(x, y)

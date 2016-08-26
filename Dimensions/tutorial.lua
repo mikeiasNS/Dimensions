@@ -35,40 +35,42 @@ function scene:create(event)
 	physics.addBody(ben, {density = 1, friction = 0, bounce = 0})
 
 	map = dusk.buildMap("maps/chapter1.json")
-	map.layer["teste"]:insert(ben)
-	mapX, mapY = map.tilesToPixels(0, 20)
-	map.y = screen.height - mapY
+	map.layer["main"]:insert(ben)
+	map.y = screen.height - map.height / 2
+	map.rotation = 0
+	initialMapX = map.x
+
 
 	-- add buttons
 	backBtn = widget.newButton{
 		label="",
 		defaultFile="images/back.png",
-		width = display.contentHeight * 0.15, 
-		height= display.contentHeight * 0.15, 
+		width = display.contentHeight * 0.1, 
+		height= display.contentHeight * 0.1, 
 		onEvent = goBack
 	}
-	backBtn.x = display.contentWidth * 0.05
-	backBtn.y = display.contentHeight - display.contentHeight * 0.15
+	backBtn.x, backBtn.y = screen.left + display.contentHeight * 0.075, display.contentHeight - display.contentHeight * 0.1
+	backBtn.alpha = 0.5
 
 	aheadBtn = widget.newButton{
 		label="",
 		defaultFile="images/ahead.png",
-		width = display.contentHeight * 0.15, 
-		height= display.contentHeight * 0.15, 
+		width = display.contentHeight * 0.1, 
+		height= display.contentHeight * 0.1, 
 		onEvent = goAhead
 	}
-	aheadBtn.x = backBtn.x + (backBtn.width / 2) + display.contentWidth * 0.05
-	aheadBtn.y = display.contentHeight - display.contentHeight * 0.1
+	aheadBtn.x, aheadBtn.y = backBtn.x + (backBtn.width / 2) + display.contentWidth * 0.06, display.contentHeight - display.contentHeight * 0.07
+	aheadBtn.alpha = 0.5
 
 	jumpBtn = widget.newButton{
 		label="",
 		defaultFile="images/up.png",
-		width = display.contentHeight * 0.15, 
-		height= display.contentHeight * 0.15, 
+		width = display.contentHeight * 0.1, 
+		height= display.contentHeight * 0.1, 
 		onPress = jump
 	}
-	jumpBtn.x = display.contentWidth - display.contentWidth * 0.08
-	jumpBtn.y = (aheadBtn.y + backBtn.y) / 2
+	jumpBtn.x, jumpBtn.y = screen.right - display.contentWidth * 0.08, (aheadBtn.y + backBtn.y) / 2
+	jumpBtn.alpha = 0.5
 end
 
 function goAhead(event)
@@ -103,7 +105,7 @@ function handleMove(event)
 	if(benWalkingAhead == true) then
 		ben.x = ben.x + 5
 	elseif (benWalkingBack == true) then
-		if(map.x >= 0 and ben.x >= (ben.width / 2)) then
+		if(map.x >= initialMapX and ben.x >= (ben.width / 2)) then
 			ben.x = ben.x - 5
 		end
 	end

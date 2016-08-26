@@ -99,8 +99,8 @@ local data = {
 	enableCameraRounding = false,
 
 	-- Allow Dusk to clip and draw tiles as needed
-	enableTileCulling = true,
-	enableObjectCulling = true,
+	enableTileCulling = false,
+	enableObjectCulling = false,
 	
 	-- Tiles outside the screen to draw. If you're seeing tiles being drawn and
 	-- erased, set this as needed. Otherwise, a value of 1 should be fine.
