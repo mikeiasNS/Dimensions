@@ -17,18 +17,19 @@ local groundName = "ground"
 local function onBenCollision(self, event)
 	if(event.other.name == groundName and event.phase == "began") then
 		jumping = false
+	elseif(event.other.name ~= groundName) then
+		ben:setLinearVelocity(0, 0)
 	end
 end
 
 function scene:create(event)
+	local sceneGroup = self.view
 
 	physics.start()
 	physics.pause()
 
 	ben = display.newImage("images/ben.png")
 	ben.anchorX, ben.anchorY = 0.5, 0.5
-	ben.x = ben.width / 2
-	ben.y = ben.height
 	ben.name = "ben"
 	ben.collision = onBenCollision
 	ben:addEventListener("collision")
@@ -36,10 +37,13 @@ function scene:create(event)
 
 	map = dusk.buildMap("maps/chapter1.json")
 	map.layer["main"]:insert(ben)
-	map.y = screen.height - map.height / 2
-	map.rotation = 0
 	initialMapX = map.x
 
+	map.setCameraFocus(ben)
+	map.setTrackingLevel(1)
+
+	ben.x = ben.width / 2 + screen.width * 0.15
+	ben.y = map.height / 2 - map.height * 0.105
 
 	-- add buttons
 	backBtn = widget.newButton{
@@ -71,6 +75,8 @@ function scene:create(event)
 	}
 	jumpBtn.x, jumpBtn.y = screen.right - display.contentWidth * 0.08, (aheadBtn.y + backBtn.y) / 2
 	jumpBtn.alpha = 0.5
+
+	sceneGroup:insert(map)
 end
 
 function goAhead(event)
@@ -94,20 +100,35 @@ function goBack(event)
 end
 
 function jump(event) 
-	if (jumping == false) then
+	if (not jumping) then
 		jumping = true
-		ben:applyLinearImpulse(0, -80, ben.x, ben.y)
+		ben:applyLinearImpulse(0, -150, ben.x, ben.y)
 	end
 end
 
 function handleMove(event)
-	map.updateView()
+	--if(not jumping) then
+		map.updateView()
+	--end
+	
 	if(benWalkingAhead == true) then
 		ben.x = ben.x + 5
+		--map.layer["Odihna_1"].x = map.layer["Odihna_1"].x - 5
 	elseif (benWalkingBack == true) then
 		if(map.x >= initialMapX and ben.x >= (ben.width / 2)) then
 			ben.x = ben.x - 5
 		end
+		--map.layer["Odihna_1"].x = map.layer["Odihna_1"].x + 5
+	end
+end
+
+function updateMapPosition(xMin, xMax)
+	local benX, benY = ben.x % screen.width - map.x, ben.y % screen.height
+	if(benX <= xMin and map.x > initialMapX) then
+
+	elseif(benX >= xMax) then
+		--local deltaX = xMin - xMax
+		map:translate(-5, 0)
 	end
 end
 
