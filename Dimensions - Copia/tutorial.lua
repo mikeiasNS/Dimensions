@@ -20,9 +20,21 @@ local screenRight = screenWidth - screenLeft
 local benName = "ben"
 local groundName = "ground"
 
+local function die()
+	local options = {
+		effect = "fade",
+		time = 500,
+		params = {}
+	}
+	composer.removeScene("tutorial")
+	composer.gotoScene("gameover")
+end
+
 local function onBenCollision(self, event)
 	if(event.other.name == groundName and event.phase == "began") then
 		jumping = false
+	elseif(event.other.name == "water") then
+		die()
 	end
 end
 
@@ -31,6 +43,7 @@ local onNameProperty = function(event)
 end
 
 function scene:create(event)
+	print("opa")
 	local sceneGroup = self.view
 
 	--ENABLE PHYSICS -----------------------------------------------------------------------
@@ -47,7 +60,7 @@ function scene:create(event)
 	local blockScale = 33
 	local locX = 18
 	local locY = 30.6
-	mte.setCamera({locX = locX, locY = locY, blockScale = blockScale})
+	map = mte.setCamera({locX = locX, locY = locY, blockScale = blockScale})
 	mte.constrainCamera() 
 
 	local spriteSheet = graphics.newImageSheet("images/ben_sprite.png", {width = 50, height = 156, numFrames = 6})
@@ -99,6 +112,11 @@ function scene:create(event)
 	}
 	jumpBtn.x, jumpBtn.y = screenRight - display.contentHeight * 0.1, (aheadBtn.y + backBtn.y) / 2
 	jumpBtn.alpha = 0.5
+
+	sceneGroup:insert(map)
+	sceneGroup:insert(aheadBtn)
+	sceneGroup:insert(backBtn)
+	sceneGroup:insert(jumpBtn)
 end
 
 function goAhead(event)
@@ -116,7 +134,7 @@ function goAhead(event)
 end
 
 function goBack(event)
-	if ( event.phase == "began" ) then
+	if (event.phase == "began") then
         benWalkingBack = true
         ben:setSequence( "walkBack" )
         ben:play()
@@ -155,7 +173,7 @@ function scene:show(event)
 		-- Called when the scene is now on screen
 		-- 
 		-- e.g. start timers, begin animation, play audio, etc.
-		physics.start()
+		--physics.start()
 	end
 end
 
@@ -167,7 +185,15 @@ function scene:hide(event)
 		--
 		-- INSERT code here to pause the scene
 		-- e.g. stop timers, stop animation, unload sounds, etc.)
-		physics.stop()
+		scene:removeEventListener("create", scene)
+		scene:removeEventListener("show", scene)
+		scene:removeEventListener("hide", scene)
+		scene:removeEventListener("destroy", scene)
+		Runtime:removeEventListener("enterFrame", handleMove)
+		backBtn:removeSelf()
+		jumpBtn:removeSelf()
+		aheadBtn:removeSelf()
+		backBtn, jumpBtn, aheadBtn = nil, nil, nil
 	elseif phase == "did" then
 		-- Called when the scene is now off screen
 	end	
@@ -178,8 +204,7 @@ function scene:destroy(event)
 	-- 
 	-- INSERT code here to cleanup the scene
 	-- e.g. remove display objects, remove touch listeners, save state, etc.	
-	package.loaded[physics] = nil
-	physics = nil		
+	--package.loaded[physics] = nil		
 end
 
 -- Listener setup
