@@ -40,7 +40,7 @@ function scene:create(event)
 	initialMapX = map.x
 
 	map.setCameraFocus(ben)
-	map.setTrackingLevel(1)
+	map.setTrackingLevel(0.1)
 
 	ben.x = ben.width / 2 + screen.width * 0.15
 	ben.y = map.height / 2 - map.height * 0.105
@@ -107,9 +107,7 @@ function jump(event)
 end
 
 function handleMove(event)
-	--if(not jumping) then
-		map.updateView()
-	--end
+	map.updateView()
 	
 	if(benWalkingAhead == true) then
 		ben.x = ben.x + 5
