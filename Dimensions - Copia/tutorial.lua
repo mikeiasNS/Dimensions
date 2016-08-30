@@ -16,24 +16,42 @@ local benWalkingAhead, benWalkingBack, jumping = false, false, false
 local screenLeft, screenWidth = display.screenOriginX, display.contentWidth
 local screenRight = screenWidth - screenLeft
 
+
+-- Load two audio streams
+local deBoa = audio.loadStream("sound/de_boa.mp3")
+local eita = audio.loadStream("sound/eita.mp3")
+
+local backGroundEitaChannel, backgroundMusicChannel
+
 --collision names
 local benName = "ben"
 local groundName = "ground"
 
 local function die()
+	audio.stop(backgroundMusicChannel)
+	audio.stop(backGroundEitaChannel)
+	backgroundMusicChannel = nil
+	backGroundEitaChannel = nil
+
+	mte.physics.setGravity(0, 0)
 	local options = {
 		effect = "fade",
 		time = 500,
 		params = {}
 	}
 	composer.removeScene("tutorial")
-	composer.gotoScene("gameover")
+	composer.gotoScene("gameover", options)
+end
+
+function swipeBG()
+	audio.pause(backgroundMusicChannel)
+	backGroundEitaChannel = audio.play(eita, {channel=audio.findFreeChannel(), loops=-1})
 end
 
 local function onBenCollision(self, event)
 	if(event.other.name == groundName and event.phase == "began") then
 		jumping = false
-	elseif(event.other.name == "water") then
+	elseif(event.other.name == "death") then
 		die()
 	end
 end
@@ -42,8 +60,11 @@ local onNameProperty = function(event)
     event.target.name = event.propValue
 end
 
+local onEnemyProperty = function(event)
+	swipeBG()
+end
+
 function scene:create(event)
-	print("opa")
 	local sceneGroup = self.view
 
 	--ENABLE PHYSICS -----------------------------------------------------------------------
@@ -57,6 +78,7 @@ function scene:create(event)
 	mte.toggleWorldWrapY(true)
 	mte.loadMap("maps/chapter1Test.tmx")
 	mte.addPropertyListener("name", onNameProperty)
+	mte.addPropertyListener("enemy", onEnemyProperty)
 	local blockScale = 33
 	local locX = 18
 	local locY = 30.6
@@ -169,6 +191,8 @@ function scene:show(event)
 	
 	if phase == "will" then
 		-- Called when the scene is still off screen and is about to move on screen
+		backgroundMusicChannel = audio.play(deBoa, {channel=audio.findFreeChannel(), loops=-1})
+		audio.resume(backgroundMusicChannel)
 	elseif phase == "did" then
 		-- Called when the scene is now on screen
 		-- 
@@ -185,15 +209,6 @@ function scene:hide(event)
 		--
 		-- INSERT code here to pause the scene
 		-- e.g. stop timers, stop animation, unload sounds, etc.)
-		scene:removeEventListener("create", scene)
-		scene:removeEventListener("show", scene)
-		scene:removeEventListener("hide", scene)
-		scene:removeEventListener("destroy", scene)
-		Runtime:removeEventListener("enterFrame", handleMove)
-		backBtn:removeSelf()
-		jumpBtn:removeSelf()
-		aheadBtn:removeSelf()
-		backBtn, jumpBtn, aheadBtn = nil, nil, nil
 	elseif phase == "did" then
 		-- Called when the scene is now off screen
 	end	
@@ -205,6 +220,18 @@ function scene:destroy(event)
 	-- INSERT code here to cleanup the scene
 	-- e.g. remove display objects, remove touch listeners, save state, etc.	
 	--package.loaded[physics] = nil		
+	scene:removeEventListener("create", scene)
+	scene:removeEventListener("show", scene)
+	scene:removeEventListener("hide", scene)
+	scene:removeEventListener("destroy", scene)
+	Runtime:removeEventListener("enterFrame", handleMove)
+	backBtn:removeSelf()
+	jumpBtn:removeSelf()
+	aheadBtn:removeSelf()
+	backBtn, jumpBtn, aheadBtn = nil, nil, nil
+	audio.pause(backGroundEitaChannel)
+	audio.pause(backgroundMusicChannel)
+	timer.performWithDelay(500, mte.cleanup)
 end
 
 -- Listener setup

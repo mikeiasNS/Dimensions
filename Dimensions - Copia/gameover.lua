@@ -14,13 +14,15 @@ function scene:create(event)
 
 	playAgainBtn = widget.newButton{
 		label="Jogar novamente",
-		width=100,
+		--defaultFile="images/replay.png",
+		width = display.contentHeight * 0.15, 
+		height= display.contentHeight * 0.15,
 		onRelease = playAgain
 	}
-	playAgainBtn.x, playAgainBtn.y = display.contentCenterX, display.contentCenterY + 100
+	playAgainBtn.x, playAgainBtn.y = display.contentCenterX, display.contentCenterY + 150
 
-	sceneGroup:insert(playAgainBtn)
 	sceneGroup:insert(img)
+	sceneGroup:insert(playAgainBtn)
 end
 
 function scene:show(event)
@@ -38,7 +40,6 @@ function scene:show(event)
 end
 
 function scene:hide(event)
-	print("eita")
 	local phase = event.phase
 	
 	if phase == "will" then
