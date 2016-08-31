@@ -18,8 +18,8 @@ local screenRight = screenWidth - screenLeft
 
 
 -- Load two audio streams
-local deBoa = audio.loadStream("sound/de_boa.mp3")
-local eita = audio.loadStream("sound/eita.mp3")
+local deBoa = audio.loadStream("sound/de_boa.wav")
+local eita = audio.loadStream("sound/eita.wav")
 
 local backGroundEitaChannel, backgroundMusicChannel
 
@@ -28,10 +28,7 @@ local benName = "ben"
 local groundName = "ground"
 
 local function die()
-	audio.stop(backgroundMusicChannel)
-	audio.stop(backGroundEitaChannel)
-	backgroundMusicChannel = nil
-	backGroundEitaChannel = nil
+	audio.stop()
 
 	mte.physics.setGravity(0, 0)
 	local options = {
