@@ -9,9 +9,11 @@ display.setDefault( "magTextureFilter", "nearest" )
 display.setDefault( "minTextureFilter", "nearest" )
 system.activate("multitouch")
 local mte = require("MTE.mte").createMTE()
-local ben
+local ben, ren
 
-local benWalkingAhead, benWalkingBack, jumping = false, false, false
+local currentChar
+
+local playerWalkingAhead, playerWalkingBack, jumping = false, false, false
 
 local screenLeft, screenWidth = display.screenOriginX, display.contentWidth
 local screenRight = screenWidth - screenLeft
@@ -45,11 +47,11 @@ function swipeBG()
 	backGroundEitaChannel = audio.play(eita, {channel=audio.findFreeChannel(), loops=-1})
 end
 
-local function onBenCollision(self, event)
+local function onCharCollision(self, event)
 	if(event.other.name == groundName and event.phase == "began") then
 		jumping = false
-	elseif(event.other.name == "death") then
-		die()
+	elseif(event.other.name == "totem") then
+		toUpSideWorld()
 	end
 end
 
@@ -59,6 +61,19 @@ end
 
 local onEnemyProperty = function(event)
 	swipeBG()
+end
+
+function toUpSideWorld() 
+	mte.setCameraFocus(nil)
+	currentChar = ren
+	mte.moveCameraTo({levelPosY = ren.y + 80, levelPosX = mte.getCamera().levelPosX, time = 1000, transition = easing.inOutQuad})
+	ben.gravityScale = 0
+	mte.physics.setGravity(0, -50)
+	timer.performWithDelay(1000, focusCameraInRen) 
+end
+
+function focusCameraInRen()
+	mte.setCameraFocus(ren, 0, 80)
 end
 
 function scene:create(event)
@@ -77,29 +92,48 @@ function scene:create(event)
 	mte.addPropertyListener("name", onNameProperty)
 	mte.addPropertyListener("enemy", onEnemyProperty)
 	local blockScale = 33
-	local locX = 18
-	local locY = 30.6
-	map = mte.setCamera({locX = locX, locY = locY, blockScale = blockScale})
+	map = mte.setCamera({blockScale = blockScale})
 	mte.constrainCamera() 
+
+	local benProperties = mte.getObject({name = "Ben"})
+	local renProperties = mte.getObject({name = "Ren"})
 
 	local spriteSheet = graphics.newImageSheet("images/ben_sprite.png", {width = 50, height = 156, numFrames = 6})
 	local sequenceData = {
-			{name = "stoppedAhead", sheet = spriteSheet, frames = {1}, time = 200, loopCount = 0},
-			{name = "stoppedBack", sheet = spriteSheet, frames = {4}, time = 200, loopCount = 0},
-			{name = "walkAhead", sheet = spriteSheet, frames = {2, 3}, time = 300, loopCount = 0},
-			{name = "walkBack", sheet = spriteSheet, frames = {5, 6}, time = 300, loopCount = 0}
+			{name = "stoppedAhead", sheet = spriteSheet, frames = {3}, time = 200, loopCount = 0},
+			{name = "stoppedBack", sheet = spriteSheet, frames = {6}, time = 200, loopCount = 0},
+			{name = "walkAhead", sheet = spriteSheet, frames = {2, 1}, time = 300, loopCount = 0},
+			{name = "walkBack", sheet = spriteSheet, frames = {5, 4}, time = 300, loopCount = 0}
 	}
 
 	ben = display.newSprite(spriteSheet, sequenceData)
-	local setup = {layer = mte.getSpriteLayer(1), kind = "sprite", locX = 5, locY = locY}	
-	ben.collision = onBenCollision
-	ben:addEventListener("collision")
-
-	mte.addSprite(ben, setup)
-	mte.setCameraFocus(ben, 0, -80)
-	mte.update()
+	local setup = {layer = 5, kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
 	mte.physics.addBody(ben, "dynamic", {friction = 0.2, bounce = 0.0, density = 1, filter = { categoryBits = 1, maskBits = 1 } })
 	ben.isFixedRotation = true
+	ben.collision = onCharCollision
+	ben:addEventListener("collision")
+	mte.addSprite(ben, setup)
+
+	currentChar = ben
+
+	local renSpriteSheet = graphics.newImageSheet("images/ren_sprite.png", {width = 50, height = 156, numFrames = 6})
+	local renSequenceData = {
+			{name = "stoppedAhead", sheet = renSpriteSheet, frames = {3}, time = 200, loopCount = 0},
+			{name = "stoppedBack", sheet = renSpriteSheet, frames = {6}, time = 200, loopCount = 0},
+			{name = "walkAhead", sheet = renSpriteSheet, frames = {2, 1}, time = 300, loopCount = 0},
+			{name = "walkBack", sheet = renSpriteSheet, frames = {5, 4}, time = 300, loopCount = 0}
+	}
+
+	ren = display.newSprite(renSpriteSheet, renSequenceData)
+	local renSetup = {layer = mte.getSpriteLayer(1), kind = "sprite", levelPosX = renProperties[1].x, levelPosY = renProperties[1].y}	
+	mte.physics.addBody(ren, "dynamic", {friction = 0.2, bounce = 0.0, density = 1, filter = { categoryBits = 1, maskBits = 1 } })
+	ren.isFixedRotation = true
+	ren.collision = onCharCollision
+	ren:addEventListener("collision")
+	mte.addSprite(ren, renSetup)
+
+	mte.setCameraFocus(ben, 0, -80)
+	mte.update()
 
 	--add buttons
 	backBtn = widget.newButton{
@@ -140,27 +174,26 @@ end
 
 function goAhead(event)
 	if ( event.phase == "began" ) then
-        benWalkingAhead = true
-        ben:setSequence( "walkAhead" )
-        ben:play()
+        playerWalkingAhead = true
+        currentChar:setSequence( "walkAhead" )
+        currentChar:play()
     elseif (event.phase == "ended" or event.phase == "cancelled") then
-        benWalkingAhead = false
-        ben:setSequence( "stoppedAhead" )
-        ben:play()
+        playerWalkingAhead = false
+        currentChar:setSequence( "stoppedAhead" )
+        currentChar:play()
     end
-
     return true
 end
 
 function goBack(event)
 	if (event.phase == "began") then
-        benWalkingBack = true
-        ben:setSequence( "walkBack" )
-        ben:play()
+        playerWalkingBack = true
+        currentChar:setSequence( "walkBack" )
+        currentChar:play()
     elseif (event.phase == "ended" or event.phase == "cancelled") then
-        benWalkingBack = false
-        ben:setSequence( "stoppedBack" )
-        ben:play()
+        playerWalkingBack = false
+        currentChar:setSequence( "stoppedBack" )
+        currentChar:play()
     end
 
     return true
@@ -168,17 +201,21 @@ end
 
 function jump(event) 
 	if (not jumping) then
-		jumping = true
-		ben:applyLinearImpulse(0, -200, ben.x, ben.y)
+		if(cameraFocusInBen) then
+			jumping = true
+			currentChar:applyLinearImpulse(0, -200, currentChar.x, currentChar.y)
+		else 
+			currentChar:applyLinearImpulse(0, 200, currentChar.x, currentChar.y)
+		end
 	end
 end
 
 function handleMove(event)	
 	mte.update()
-	if(benWalkingAhead) then 
-		ben.x = ben.x + 5
-	elseif (benWalkingBack == true) then
-		ben.x = ben.x - 5
+	if(playerWalkingAhead) then 
+		currentChar.x = currentChar.x + 5
+	elseif (playerWalkingBack) then
+		currentChar.x = currentChar.x - 5
 	end
 end
 
@@ -189,7 +226,6 @@ function scene:show(event)
 	if phase == "will" then
 		-- Called when the scene is still off screen and is about to move on screen
 		backgroundMusicChannel = audio.play(deBoa, {channel=audio.findFreeChannel(), loops=-1})
-		audio.resume(backgroundMusicChannel)
 	elseif phase == "did" then
 		-- Called when the scene is now on screen
 		-- 
