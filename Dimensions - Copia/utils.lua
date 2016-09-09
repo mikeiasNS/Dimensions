@@ -26,12 +26,33 @@ util.toCommonWorld = function (mte, ren, ben)
 	return ren
 end
 
+util.setInitialWorld = function(destinyId, mte, ben, ren)
+	local currentChar = ben
+	if(destinyId > 0) then
+		--common world
+		mte.setCameraFocus(nil)
+		ren.gravityScale = 0
+		ben.gravityScale = 1
+		mte.physics.setGravity(0, 50)
+		focusCameraInBen()
+	else 
+		mte.setCameraFocus(nil)
+		ren.gravityScale = 1
+		ben.gravityScale = 0
+		mte.physics.setGravity(0, -200)
+		focusCameraInRen()
+		currentChar = ren
+	end
+
+	return currentChar
+end
+
 util.focusCameraInRen = function ()
-	mte.setCameraFocus(ren, 0, 80)
+	mte.setCameraFocus(ren, 25, 80)
 end
 
 util.focusCameraInBen = function ()
-	mte.setCameraFocus(ben, 0, 80)
+	mte.setCameraFocus(ben, 0, -80)
 end
 
 return util

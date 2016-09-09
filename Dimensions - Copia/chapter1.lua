@@ -2,7 +2,6 @@ local composer = require( "composer" )
 local scene = composer.newScene()
 local physics = require "physics"
 
--- MTE "PLATFORMER - ANGLED" -----------------------------------------------------------
 --display.setStatusBar( display.HiddenStatusBar )
 display.setDefault( "magTextureFilter", "nearest" )
 display.setDefault( "minTextureFilter", "nearest" )
@@ -10,7 +9,7 @@ system.activate("multitouch")
 local mte = require("MTE.mte").createMTE()
 local loader = require("loader")
 local util = require("utils")
-local ben, ren
+local ben, ren, enemies
 
 local currentChar
 
@@ -54,20 +53,27 @@ local onNameProperty = function(event)
     event.target.name = event.propValue
 end
 
-function toUpSideWorld() 
-	local transitionTime = 2000
-
-	mte.setCameraFocus(nil)
-	currentChar = ren
-	mte.moveCameraTo({levelPosY = ren.y + 80, levelPosX = ren.x + 2, time = transitionTime})
-	ben.gravityScale = 0
-	ren.gravityScale = 1
-	mte.physics.setGravity(0, -200)
-	timer.performWithDelay(transitionTime, focusCameraInRen) 
-end
-
 function focusCameraInRen()
 	mte.setCameraFocus(ren, 0, 80)
+end
+
+function focusCameraInBen()
+	mte.setCameraFocus(ben, 0, -80)
+end
+
+function updateEnemy(event)
+	--if(enemies[1].x >= enemies[1].initialX + 60) then
+		-- go back
+		enemies[1].x = enemies[1].x - 10
+		if(not enemies[1].isPlaying) then
+			enemies[1]:setSequence("walkBack")
+			enemies[1]:play()
+		end
+	--elseif(enemies[1].x <= enemies[1].initialX - 60) then
+		-- go ahead
+	--	enemies[1]:setSequence("walkAhead")
+	--	enemies[1].x = enemies[1].x + 15
+	--end
 end
 
 function scene:create(event)
@@ -76,27 +82,29 @@ function scene:create(event)
 	--ENABLE PHYSICS -----------------------------------------------------------------------
 	mte.enableBox2DPhysics()
 	mte.physics.start()
-	mte.physics.setGravity(0, 50)
+	mte.physics.setDrawMode("hybrid")
 
 	--LOAD MAP -----------------------------------------------------------------------------
-	loader.loadMap("maps/chapter1Test.tmx", mte) 
+	loader.loadMap("maps/chapter1.tmx", mte) 
 	mte.addPropertyListener("name", onNameProperty)
 
 	--LOAD CHARS ---------------------------------------------------------------------------
-	ben = loader.loadBen(mte)
-	ben.collision = onCharCollision
-	ben:addEventListener("collision")
-	ben.name = benName
-
 	ren = loader.loadRen(mte)
 	ren.collision = onCharCollision
 	ren:addEventListener("collision")
 	ren.name = renName
 
-	currentChar = ben
+	ben = loader.loadBen(mte)
+	ben.collision = onCharCollision
+	ben:addEventListener("collision")
+	ben.name = benName
 
-	mte.setCameraFocus(ben, 0, -80)
+	currentChar = util.setInitialWorld(event.params.destinyId, mte, ben, ren)
 	mte.update()
+
+	--LOAD ENEMIES -------------------------------------------------------------------------
+	enemies = loader.loadEnemies(mte)
+	timer.performWithDelay(200, updateEnemy, -1)
 
 	--load buttons
 	backBtn, aheadBtn, jumpBtn = loader.loadButtons()
@@ -155,13 +163,8 @@ function scene:show(event)
 	local phase = event.phase
 	
 	if phase == "will" then
-		-- Called when the scene is still off screen and is about to move on screen
 		--backgroundMusicChannel = audio.play(deBoa, {channel=audio.findFreeChannel(), loops=-1})
 	elseif phase == "did" then
-		-- Called when the scene is now on screen
-		-- 
-		-- e.g. start timers, begin animation, play audio, etc.
-		--physics.start()
 	end
 end
 
@@ -169,20 +172,11 @@ function scene:hide(event)
 	local phase = event.phase
 	
 	if phase == "will" then
-		-- Called when the scene is on screen and is about to move off screen
-		--
-		-- INSERT code here to pause the scene
-		-- e.g. stop timers, stop animation, unload sounds, etc.)
 	elseif phase == "did" then
-		-- Called when the scene is now off screen
 	end	
 end
 
 function scene:destroy(event)
-	-- Called prior to the removal of scene's "view" (sceneGroup)
-	-- 
-	-- INSERT code here to cleanup the scene
-	-- e.g. remove display objects, remove touch listeners, save state, etc.	
 	--package.loaded[physics] = nil		
 	scene:removeEventListener("create", scene)
 	scene:removeEventListener("show", scene)

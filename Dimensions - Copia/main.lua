@@ -11,4 +11,4 @@ display.setStatusBar( display.HiddenStatusBar )
 local composer = require "composer"
 
 -- load scene
-composer.gotoScene( "tutorial" )
+composer.gotoScene( "menu" )
