@@ -47,12 +47,13 @@ util.setInitialWorld = function(destinyId, mte, ben, ren)
 	return currentChar
 end
 
-util.focusCameraInRen = function ()
-	mte.setCameraFocus(ren, 25, 80)
-end
-
-util.focusCameraInBen = function ()
-	mte.setCameraFocus(ben, 0, -80)
+util.tableContains = function(table, val) 
+	for k, v in ipairs(table) do
+		if(v == val) then
+			return true
+		end
+	end
+	return false
 end
 
 return util

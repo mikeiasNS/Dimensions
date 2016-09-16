@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" nextobjectid="26">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" nextobjectid="30">
  <tileset firstgid="1" name="ground_elements" tilewidth="32" tileheight="32" spacing="2" margin="1" tilecount="20" columns="5">
   <image source="tilesets/ground_elements.png" width="170" height="136"/>
   <tile id="0">
@@ -58,7 +58,7 @@
   </tile>
   <tile id="16">
    <properties>
-    <property name="name" value="ground"/>
+    <property name="name" value="ground1"/>
     <property name="physics" value="true"/>
     <property name="solid" value="true"/>
    </properties>

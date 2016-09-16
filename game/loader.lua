@@ -1,4 +1,5 @@
 local widget = require "widget"
+local util = require ("utils")
 
 local loader = {}
 
@@ -55,9 +56,13 @@ end
 
 --TODO: load all enemies
 loader.loadEnemies = function (mte)
-	local raptorShapeHead = {-153, 101.5 , -166, 43.5 , -126, 10.5 , -89, 39.5 , -98, 101.5}
-	local raptorShapeFootsBody = {55, -9.5 , 52, 46.5 , -89, 39.5 , -126, 10.5 , -103, -74.5 , -34, -102.5 , 34, -102.5}
-	local raptorShapeTail = {113, 84.5 , 52, 46.5 , 55, -9.5 , 167, 81.5}
+	local raptorShapeHeadB = {-153, 101.5 , -166, 43.5 , -126, 10.5 , -89, 39.5 , -98, 101.5}
+	local raptorShapeFootsBodyB = {55, -9.5 , 52, 46.5 , -89, 39.5 , -126, 10.5 , -103, -74.5 , -34, -102.5 , 34, -102.5}
+	local raptorShapeTailB = {113, 84.5 , 52, 46.5 , 55, -9.5 , 167, 81.5}
+	local raptorShapeHeadA = {153, 101.5 , 166, 43.5 , 126, 10.5 , 89, 39.5 , 98, 101.5}
+	local raptorShapeFootsBodyA = {-55, -9.5 , -52, 46.5 , 89, 39.5 , 126, 10.5 , 103, -74.5 , 34, -102.5 , -34, -102.5}
+	local raptorShapeTailA = {-113, 84.5 , -52, 46.5 , -55, -9.5 , -167, 81.5}
+
 
 	local enemies = {}
 	local enemiesProperties = mte.getObject({name = "Raptor1"})
@@ -70,24 +75,48 @@ loader.loadEnemies = function (mte)
 			{name = "walkBack", sheet = spriteSheet, frames = {5, 6}, time = 800, loopCount = 0}
 	}
 
+	walkAheadTable = {{1, 2, 3}, {1, 2, 3}}
+	walkBackTable = {{4, 5, 6}, {4, 5, 6}}
+
 	local raptor = display.newSprite(spriteSheet, sequenceData)
 	local setup = {layer = 3, kind = "sprite", levelPosX = enemiesProperties[1].x, levelPosY = enemiesProperties[1].y}
 
-	local opt1 = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeHead}
-	local opt2 = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeFootsBody}
-	local opt3 = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeTail}
+	local opt1A = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeHeadA}
+	local opt2A = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeFootsBodyA}
+	local opt3A = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeTailA}
+	local opt1B = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeHeadB}
+	local opt2B = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeFootsBodyB}
+	local opt3B = {friction = 0.2, bounce = 0.0, density = 3, shape=raptorShapeTailB}
 
-	mte.physics.addBody(raptor, "dynamic", opt1, opt2, opt3)
+	mte.physics.addBody(raptor, "dynamic", opt1A, opt2A, opt3A, opt1B, opt2B, opt3B)
 	raptor.isFixedRotation = true
 	mte.addSprite(raptor, setup)
 
 	raptor.initialX = raptor.x
+	raptor.preCollision = loader.enemiesPreCollision
+	raptor.shapesBySequenceAndFrame = {}
+	raptor.shapesBySequenceAndFrame["stoppedAhead"] = walkAheadTable
+	raptor.shapesBySequenceAndFrame["stoppedBack"] = walkBackTable
+	raptor.shapesBySequenceAndFrame["walkAhead"] = walkAheadTable
+	raptor.shapesBySequenceAndFrame["walkBack"] = walkBackTable
+	raptor:addEventListener("preCollision")
 	raptor:setSequence("walkBack")
 	raptor:play()
 
 	table.insert(enemies, raptor)
 
 	return enemies
+end
+
+loader.enemiesPreCollision = function(self, event)
+	for seq, frameShapes in pairs(self.shapesBySequenceAndFrame) do
+		--print(seq)
+		if(seq == self.sequence) then
+			if(not util.tableContains(frameShapes[self.frame], event.selfElement)) then
+				event.contact.isEnabled = false
+			end
+		end
+	end
 end
 
 loader.loadButtons = function ()

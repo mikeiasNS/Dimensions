@@ -87,6 +87,7 @@ function scene:create(event)
 	--LOAD MAP -----------------------------------------------------------------------------
 	loader.loadMap("maps/chapter1.tmx", mte) 
 	mte.addPropertyListener("name", onNameProperty)
+	mte.drawObjects()
 
 	--LOAD CHARS ---------------------------------------------------------------------------
 	ren = loader.loadRen(mte)
@@ -104,6 +105,8 @@ function scene:create(event)
 
 	--LOAD ENEMIES -------------------------------------------------------------------------
 	enemies = loader.loadEnemies(mte)
+	--enemies[1].preCollision = enemiesPreCollision
+	--enemies[1]:addEventListener("preCollision")
 	timer.performWithDelay(200, updateEnemy, -1)
 
 	--load buttons
