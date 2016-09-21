@@ -1256,7 +1256,9 @@ M2.createMTE = function()
 			end
 		end
 		if destroyObject == nil or destroyObject == true then
-			sprite:removeSelf()
+			if sprite.removeSelf then
+				sprite:removeSelf()
+			end
 			sprite = nil
 		else
 			local stage = display.getCurrentStage()

@@ -7,8 +7,8 @@ local screenLeft, screenWidth = display.screenOriginX, display.contentWidth
 local centerX, centerY = display.contentCenterX, display.contentCenterY
 local screenRight = screenWidth - screenLeft
 
-loader.loadBen = function (mte)
-	local benProperties = mte.getObject({name = "Ben"})
+loader.loadBen = function (mte, objName)
+	local benProperties = mte.getObject({name = objName})
 
 	local spriteSheet = graphics.newImageSheet("images/ben_sprite.png", {width = 50, height = 156, numFrames = 6})
 	local sequenceData = {
@@ -19,19 +19,19 @@ loader.loadBen = function (mte)
 	}
 
 	local ben = display.newSprite(spriteSheet, sequenceData)
-	local setup = {layer = 7, kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
-	mte.physics.addBody(ben, "dynamic", {friction = 0.2, bounce = 0.0, density = 1 })
+	local setup = {layer = 8, kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
+	mte.physics.addBody(ben, "dynamic", {friction = 0.2, bounce = 0.0, density = 1})
 	ben.isFixedRotation = true
 	mte.addSprite(ben, setup)
 
-	ben.jumping = false
+	ben.jump = 0
 	ben.jumpForce = -200
 
 	return ben
 end
 
-loader.loadRen = function (mte)
-	local renProperties = mte.getObject({name = "Ren"})
+loader.loadRen = function (mte, objName)
+	local renProperties = mte.getObject({name = objName})
 
 	local renSpriteSheet = graphics.newImageSheet("images/ren_sprite.png", {width = 50, height = 156, numFrames = 6})
 	local renSequenceData = {
@@ -48,8 +48,8 @@ loader.loadRen = function (mte)
 	ren.isFixedRotation = true
 	mte.addSprite(ren, renSetup)
 
-	ren.jumping = false
-	ren.jumpForce = 200
+	ren.jump = 0
+	ren.jumpForce = 0
 
 	return ren
 end
@@ -150,7 +150,27 @@ loader.loadButtons = function ()
 	jumpBtn.x, jumpBtn.y = screenRight - display.contentHeight * 0.1, (aheadBtn.y + backBtn.y) / 2
 	jumpBtn.alpha = 0.5
 
-	return backBtn, aheadBtn, jumpBtn
+	attackBtn = widget.newButton{
+		label="",
+		defaultFile="images/attack.png",
+		width = display.contentHeight * 0.15, 
+		height= display.contentHeight * 0.15, 
+		onPress = fire
+	}
+	attackBtn.x, attackBtn.y = jumpBtn.x, jumpBtn.y
+	attackBtn.alpha = 0.5
+
+	gateBtn = widget.newButton{
+		label="",
+		defaultFile="images/portal.png",
+		width = display.contentHeight * 0.15, 
+		height= display.contentHeight * 0.15, 
+		onPress = swapWorld
+	}
+	gateBtn.x, gateBtn.y = display.contentCenterX, jumpBtn.y
+	gateBtn.alpha = 0.5
+
+	return backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
 end
 
 loader.loadMenuButtons = function ()

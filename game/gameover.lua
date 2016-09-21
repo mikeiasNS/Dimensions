@@ -4,7 +4,7 @@ local widget = require "widget"
 
 local function playAgain(event)
 	composer.removeScene("gameover")
-	composer.gotoScene("tutorial")
+	composer.gotoScene("menu")
 end
 
 function scene:create(event)

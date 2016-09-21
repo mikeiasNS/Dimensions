@@ -1,6 +1,6 @@
 local util = {}
 
-util.toUpSideWorld = function (mte, ren, ben)
+util.toUpSideWorld = function (mte, ren, ben, jumpBtn, attackBtn)
 	local transitionTime = 2000
 
 	mte.setCameraFocus(nil)
@@ -9,11 +9,13 @@ util.toUpSideWorld = function (mte, ren, ben)
 	ren.gravityScale = 1
 	mte.physics.setGravity(0, -200)
 	timer.performWithDelay(transitionTime, focusCameraInRen) 
+	attackBtn.isVisible = true
+	jumpBtn.isVisible = false
 
 	return ren
 end
 
-util.toCommonWorld = function (mte, ren, ben)
+util.toCommonWorld = function (mte, ren, ben, jumpBtn, attackBtn)
 	local transitionTime = 2000
 
 	mte.setCameraFocus(nil)
@@ -22,11 +24,13 @@ util.toCommonWorld = function (mte, ren, ben)
 	ben.gravityScale = 1
 	mte.physics.setGravity(0, 50)
 	timer.performWithDelay(transitionTime, focusCameraInBen) 
+	attackBtn.isVisible = false
+	jumpBtn.isVisible = true
 
-	return ren
+	return ben
 end
 
-util.setInitialWorld = function(destinyId, mte, ben, ren)
+util.setInitialWorld = function(destinyId, mte, ben, ren, jumpBtn, attackBtn)
 	local currentChar = ben
 	if(destinyId > 0) then
 		--common world
@@ -35,6 +39,7 @@ util.setInitialWorld = function(destinyId, mte, ben, ren)
 		ben.gravityScale = 1
 		mte.physics.setGravity(0, 50)
 		focusCameraInBen()
+		attackBtn.isVisible = false
 	else 
 		mte.setCameraFocus(nil)
 		ren.gravityScale = 1
@@ -42,9 +47,17 @@ util.setInitialWorld = function(destinyId, mte, ben, ren)
 		mte.physics.setGravity(0, -200)
 		focusCameraInRen()
 		currentChar = ren
+		jumpBtn.isVisible = false
 	end
 
 	return currentChar
+end
+
+util.repositionChar = function(destinationObjName, mte, char)
+	local newProperties = mte.getObject({name = destinationObjName})
+
+	char.x = newProperties[1].x
+	char.y = newProperties[1].y
 end
 
 util.tableContains = function(table, val) 

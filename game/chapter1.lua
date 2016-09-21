@@ -1,6 +1,6 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
-local physics = require "physics"
+local widget = require "widget"
 
 --display.setStatusBar( display.HiddenStatusBar )
 display.setDefault( "magTextureFilter", "nearest" )
@@ -13,13 +13,16 @@ local ben, ren, enemies
 
 local currentChar
 
-local playerWalkingAhead, playerWalkingBack = false, false, false
+local playerWalkingAhead, playerWalkingBack = false, false
+local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
 
--- Load two audio streams
 local deBoa = audio.loadStream("sound/de_boa.wav")
 local eita = audio.loadStream("sound/eita.wav")
+local laser = audio.loadSound("sound/laser1.wav")
 
 local backGroundEitaChannel, backgroundMusicChannel
+
+local destinationObjName
 
 --collision names
 local benName = "ben"
@@ -35,17 +38,64 @@ local function die()
 		time = 500,
 		params = {}
 	}
-	composer.removeScene("tutorial")
+	composer.removeScene("chapter1")
 	composer.gotoScene("gameover", options)
+end
+
+local function restart()
+	audio.stop()
+
+	mte.physics.setGravity(0, 0)
+	local options = {
+		effect = "fade",
+		time = 500,
+		params = {}
+	}
+	composer.removeScene("chapter1")
+	composer.gotoScene("menu", options)
 end
 
 local function onCharCollision(self, event)
 	if(event.other.name == groundName and event.phase == "began") then
-		currentChar.jumping = false
-	elseif(event.other.name == "totem" and event.target.name == benName and event.phase == "began") then
-		currentChar = util.toUpSideWorld(mte, ren, ben)
-	elseif(event.other.name == "totem" and event.target.name == renName and event.phase == "began") then
-		currentChar = util.toCommonWorld(mte, ren, ben)
+		currentChar.jump = 0
+	elseif(string.find(event.other.name, "totem") and event.target.name == benName and event.phase == "began") then
+		destinationObjName = string.match(event.other.name, "R..%d")
+		gateBtn.isVisible = true
+	elseif(string.find(event.other.name, "totem") and event.target.name == renName and event.phase == "began") then
+		destinationObjName = string.match(event.other.name, "B..%d")
+		gateBtn.isVisible = true
+	elseif event.other.name == "death" then
+		die()
+	elseif string.find(event.other.name, "end") then
+		restart()
+	end
+end
+
+local function onLaserCollision(self, event)
+	if event.other.name ~= currentChar.name then
+		self:removeSelf()
+		if event.other.x <= mte.getCamera().levelPosX + display.contentHeight then
+			if event.other.name == "crate1" then
+				event.other:removeSelf()
+				objects[4]:removeSelf()
+			elseif event.other.name == "chain1" then
+				event.other:removeSelf()
+				--subir[1, 6] e descer[2] as parada
+				objects[7]:setLinearVelocity(0, 300)
+				objects[1]:removeSelf()
+
+				objects[2]:setLinearVelocity(0, -300)
+				objects[2].isFixedRotation = true
+			end
+		end
+	end
+end
+
+local function macgyver(self, event)
+	if(event.other.name == objects[1].name or event.other.name == objects[6].name) then
+		if event.contact then
+			event.contact.isEnabled = false
+		end
 	end
 end
 
@@ -61,61 +111,52 @@ function focusCameraInBen()
 	mte.setCameraFocus(ben, 0, -80)
 end
 
-function updateEnemy(event)
-	--if(enemies[1].x >= enemies[1].initialX + 60) then
-		-- go back
-		enemies[1].x = enemies[1].x - 10
-		if(not enemies[1].isPlaying) then
-			enemies[1]:setSequence("walkBack")
-			enemies[1]:play()
-		end
-	--elseif(enemies[1].x <= enemies[1].initialX - 60) then
-		-- go ahead
-	--	enemies[1]:setSequence("walkAhead")
-	--	enemies[1].x = enemies[1].x + 15
-	--end
-end
-
 function scene:create(event)
 	local sceneGroup = self.view
 
 	--ENABLE PHYSICS -----------------------------------------------------------------------
 	mte.enableBox2DPhysics()
 	mte.physics.start()
-	mte.physics.setDrawMode("hybrid")
+	mte.enableTileFlipAndRotation()
+--	mte.physics.setDrawMode("hybrid")
 
 	--LOAD MAP -----------------------------------------------------------------------------
 	loader.loadMap("maps/chapter1.tmx", mte) 
 	mte.addPropertyListener("name", onNameProperty)
-	mte.drawObjects()
+	objects = mte.drawObjects()
 
 	--LOAD CHARS ---------------------------------------------------------------------------
-	ren = loader.loadRen(mte)
+	ren = loader.loadRen(mte, "Ren")
 	ren.collision = onCharCollision
 	ren:addEventListener("collision")
 	ren.name = renName
 
-	ben = loader.loadBen(mte)
+	ben = loader.loadBen(mte, "Ben")
 	ben.collision = onCharCollision
 	ben:addEventListener("collision")
 	ben.name = benName
 
-	currentChar = util.setInitialWorld(event.params.destinyId, mte, ben, ren)
+	backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn = loader.loadButtons()
+	gateBtn.isVisible = false
+
+	currentChar = util.setInitialWorld(event.params.destinyId, mte, ben, ren, jumpBtn, attackBtn)
 	mte.update()
 
-	--LOAD ENEMIES -------------------------------------------------------------------------
-	enemies = loader.loadEnemies(mte)
-	--enemies[1].preCollision = enemiesPreCollision
-	--enemies[1]:addEventListener("preCollision")
-	timer.performWithDelay(200, updateEnemy, -1)
-
-	--load buttons
-	backBtn, aheadBtn, jumpBtn = loader.loadButtons()
+	for k,v in pairs(objects) do
+		objects[k].gravityScale = 0
+		print(k, objects[k].name)
+	end
+	objects[1].preCollision = macgyver
+	objects[1]:addEventListener("preCollision")
+	objects[7].preCollision = macgyver
+	objects[7]:addEventListener("preCollision")
 
 	sceneGroup:insert(map)
 	sceneGroup:insert(aheadBtn)
 	sceneGroup:insert(backBtn)
 	sceneGroup:insert(jumpBtn)
+	sceneGroup:insert(attackBtn)
+	sceneGroup:insert(gateBtn)
 end
 
 function goAhead(event)
@@ -146,10 +187,54 @@ function goBack(event)
 end
 
 function jump(event) 
-	if(not currentChar.jumping) then
-		currentChar.jumping = true
+	if(currentChar.jump < 2) then
+		currentChar.jump = currentChar.jump + 1
 		currentChar:applyLinearImpulse(0, currentChar.jumpForce, currentChar.x, currentChar.y)
 	end
+end
+
+function fire(event)
+	audio.play(laser)
+	local spriteSheet = graphics.newImageSheet("images/laser.png", {width = 35, height = 10, numFrames = 1})
+
+	local laser = display.newSprite(spriteSheet, {name="default", frames={1}})
+	mte.physics.addBody(laser, "dynamic", {friction = 0.2, bounce = 0.0, density = 1})
+	local setup = {layer = 3, kind = "sprite", 
+					levelPosX = currentChar.x + currentChar.width/2 + 6, 
+					levelPosY = currentChar.y,
+					offscreenPhysics = true }
+
+	mte.addSprite(laser, setup)
+	laser.gravityScale = 0
+	--laser.isBullet = true
+	laser:setLinearVelocity( 500, 0 )
+	laser.collision = onLaserCollision
+	laser:addEventListener("collision")
+
+end
+
+function swapWorld(event)
+	print(destinationObjName)
+	if event.phase == "began" then
+		if currentChar == ben then
+			mte.removeSprite(ren, true)
+			ren = loader.loadRen(mte, destinationObjName)
+			ren.collision = onCharCollision
+			ren:addEventListener("collision")
+			ren.name = renName
+
+			currentChar = util.toUpSideWorld(mte, ren, ben, jumpBtn, attackBtn)
+		else
+			mte.removeSprite(ben, true)
+			ben = loader.loadBen(mte, destinationObjName)
+			ben.collision = onCharCollision
+			ben:addEventListener("collision")
+			ben.name = benName
+
+			currentChar = util.toCommonWorld(mte, ren, ben, jumpBtn, attackBtn)
+		end
+	end
+	gateBtn.isVisible = false
 end
 
 function handleMove(event)	
