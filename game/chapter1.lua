@@ -74,27 +74,21 @@ end
 local function onLaserCollision(self, event)
 	if event.other.name ~= currentChar.name then
 		self:removeSelf()
+		print(event.other.name)
 		if event.other.x <= mte.getCamera().levelPosX + display.contentHeight then
-			if event.other.name == "crate1" then
+			if event.other.type == "destructible" then
 				event.other:removeSelf()
-				objects[4]:removeSelf()
-			elseif event.other.name == "chain1" then
-				event.other:removeSelf()
-				--subir[1, 6] e descer[2] as parada
-				objects[7]:setLinearVelocity(0, 300)
-				objects[1]:removeSelf()
-
-				objects[2]:setLinearVelocity(0, -300)
-				objects[2].isFixedRotation = true
 			end
-		end
-	end
-end
 
-local function macgyver(self, event)
-	if(event.other.name == objects[1].name or event.other.name == objects[6].name) then
-		if event.contact then
-			event.contact.isEnabled = false
+			if event.other.name == "crate" then
+				objects["guard"]:removeSelf()
+			elseif event.other.name == "chain" then
+				objects["crate"]:setLinearVelocity(0, 300)
+				objects["totemToBen2"]:removeSelf()
+
+				objects["totemToDown"]:setLinearVelocity(0, -300)
+				objects["totemToDown"].isFixedRotation = true
+			end
 		end
 	end
 end
@@ -117,13 +111,14 @@ function scene:create(event)
 	--ENABLE PHYSICS -----------------------------------------------------------------------
 	mte.enableBox2DPhysics()
 	mte.physics.start()
-	mte.enableTileFlipAndRotation()
---	mte.physics.setDrawMode("hybrid")
+	--mte.physics.setDrawMode("hybrid")
 
 	--LOAD MAP -----------------------------------------------------------------------------
-	loader.loadMap("maps/chapter1.tmx", mte) 
+	loader.loadMap("maps/chapter1", mte) 
 	mte.addPropertyListener("name", onNameProperty)
-	objects = mte.drawObjects()
+	mte.drawObjects()
+
+	objects = loader.loadObjects(mte)
 
 	--LOAD CHARS ---------------------------------------------------------------------------
 	ren = loader.loadRen(mte, "Ren")
@@ -139,17 +134,12 @@ function scene:create(event)
 	backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn = loader.loadButtons()
 	gateBtn.isVisible = false
 
-	currentChar = util.setInitialWorld(event.params.destinyId, mte, ben, ren, jumpBtn, attackBtn)
+	currentChar = util.setInitialWorld(event.params.destinyId, mte, ben, ren, jumpBtn, attackBtn, deBoa)
 	mte.update()
 
 	for k,v in pairs(objects) do
 		objects[k].gravityScale = 0
-		print(k, objects[k].name)
 	end
-	objects[1].preCollision = macgyver
-	objects[1]:addEventListener("preCollision")
-	objects[7].preCollision = macgyver
-	objects[7]:addEventListener("preCollision")
 
 	sceneGroup:insert(map)
 	sceneGroup:insert(aheadBtn)
@@ -199,22 +189,30 @@ function fire(event)
 
 	local laser = display.newSprite(spriteSheet, {name="default", frames={1}})
 	mte.physics.addBody(laser, "dynamic", {friction = 0.2, bounce = 0.0, density = 1})
+	local laserX, laserY, velX = 0, currentChar.y, 0
+
+	if string.find(currentChar.sequence, "Ahead") then
+		laserX = currentChar.x + currentChar.width/2 + 6
+		velX = 500
+	else 
+		laserX = currentChar.x - (currentChar.width/2 + 6)
+		velX = -500
+	end
+
 	local setup = {layer = 3, kind = "sprite", 
-					levelPosX = currentChar.x + currentChar.width/2 + 6, 
-					levelPosY = currentChar.y,
+					levelPosX = laserX,
+					levelPosY = laserY,
 					offscreenPhysics = true }
 
 	mte.addSprite(laser, setup)
 	laser.gravityScale = 0
-	--laser.isBullet = true
-	laser:setLinearVelocity( 500, 0 )
+	laser:setLinearVelocity( velX, 0 )
 	laser.collision = onLaserCollision
 	laser:addEventListener("collision")
 
 end
 
 function swapWorld(event)
-	print(destinationObjName)
 	if event.phase == "began" then
 		if currentChar == ben then
 			mte.removeSprite(ren, true)
@@ -231,7 +229,7 @@ function swapWorld(event)
 			ben:addEventListener("collision")
 			ben.name = benName
 
-			currentChar = util.toCommonWorld(mte, ren, ben, jumpBtn, attackBtn)
+			currentChar = util.toCommonWorld(mte, ren, ben, jumpBtn, attackBtn, deBoa)
 		end
 	end
 	gateBtn.isVisible = false
@@ -251,7 +249,6 @@ function scene:show(event)
 	local phase = event.phase
 	
 	if phase == "will" then
-		--backgroundMusicChannel = audio.play(deBoa, {channel=audio.findFreeChannel(), loops=-1})
 	elseif phase == "did" then
 	end
 end

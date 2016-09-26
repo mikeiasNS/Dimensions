@@ -19,13 +19,13 @@ loader.loadBen = function (mte, objName)
 	}
 
 	local ben = display.newSprite(spriteSheet, sequenceData)
-	local setup = {layer = 8, kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
+	local setup = {layer = 6, kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
 	mte.physics.addBody(ben, "dynamic", {friction = 0.2, bounce = 0.0, density = 1})
 	ben.isFixedRotation = true
 	mte.addSprite(ben, setup)
 
-	ben.jump = 0
-	ben.jumpForce = -200
+	ben.jump = false
+	ben.jumpForce = -150
 
 	return ben
 end
@@ -52,6 +52,60 @@ loader.loadRen = function (mte, objName)
 	ren.jumpForce = 0
 
 	return ren
+end
+
+loader.loadObjects = function(mte)
+	local objProperties = mte.getObject({name = "sceneObj"})
+	local objects = {}
+
+	for k,v in pairs(objProperties) do
+		print(k, v)
+		local w, h = objProperties[k].width, objProperties[k].height
+		local numFrames = objProperties[k].properties.numFrames or 1
+		local path = objProperties[k].properties.path
+		local bodyType = objProperties[k].properties.bodyType or "static"
+		local offscreenPhysics = objProperties[k].properties.offscreenPhysics or false
+		local layer = objProperties[k].layer
+		local count = objProperties[k].properties.count or 1
+		local time = objProperties[k].properties.time or 0
+		local id = objProperties[k].properties.id or objProperties[k].properties.name
+		local bounce = objProperties[k].properties.bounce or 0
+		local density = objProperties[k].properties.density or 0
+
+		local objSpriteSheet = graphics.newImageSheet(path, {width = w, height = h, numFrames = numFrames})
+		local seqData = {name="default", start=1, count=count, time=time}
+		local obj = display.newSprite(objSpriteSheet, seqData)
+
+		local objX, objY = objProperties[k].x + obj.width/2, objProperties[k].y + obj.height/2
+		local objSetup = {  layer = layer, kind = "sprite", 
+							levelPosX = objX, levelPosY = objY, 
+							offscreenPhysics = offscreenPhysics  }
+
+		mte.physics.addBody(obj, bodyType, {bounce=bounce, density=density})
+	 	mte.addSprite(obj, objSetup)
+
+	 	obj.name = objProperties[k].properties.name
+	 	obj.type = objProperties[k].type
+	 	obj.id = id
+
+	 	if objProperties[k].properties.disableCollideTo then
+	 		obj.disableCollideTo = objProperties[k].properties.disableCollideTo
+	 		obj.preCollision = loader.macgyver
+			obj:addEventListener("preCollision")
+	 	end
+
+	 	objects[obj.id] = obj
+	end
+
+	return objects
+end
+
+loader.macgyver = function(self, event)
+	if(event.other.name == self.disableCollideTo) then
+		if event.contact then
+			event.contact.isEnabled = false
+		end
+	end
 end
 
 --TODO: load all enemies
@@ -168,7 +222,6 @@ loader.loadButtons = function ()
 		onPress = swapWorld
 	}
 	gateBtn.x, gateBtn.y = display.contentCenterX, jumpBtn.y
-	gateBtn.alpha = 0.5
 
 	return backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
 end
@@ -192,10 +245,14 @@ end
 loader.loadMap = function (mapPath, mte)
 	mte.toggleWorldWrapX(false)
 	mte.toggleWorldWrapY(false)
-	mte.loadMap(mapPath)
+	mte.loadMap(mapPath .. ".tmx")
 	local blockScale = 33
 	map = mte.setCamera({blockScale = blockScale})
 	mte.constrainCamera()
+
+	local backdrop = display.newImageRect(mapPath .. "BG.png", 3200, 3840)
+	local setup = {layer = 1, levelWidth = 3200, levelHeight = 3840, kind = "imageRect", locX=50.5, locY=60.5}
+	mte.addSprite(backdrop, setup)
 end
 
 

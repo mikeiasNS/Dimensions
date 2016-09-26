@@ -11,11 +11,12 @@ util.toUpSideWorld = function (mte, ren, ben, jumpBtn, attackBtn)
 	timer.performWithDelay(transitionTime, focusCameraInRen) 
 	attackBtn.isVisible = true
 	jumpBtn.isVisible = false
+	audio.stop()
 
 	return ren
 end
 
-util.toCommonWorld = function (mte, ren, ben, jumpBtn, attackBtn)
+util.toCommonWorld = function (mte, ren, ben, jumpBtn, attackBtn, st)
 	local transitionTime = 2000
 
 	mte.setCameraFocus(nil)
@@ -26,28 +27,29 @@ util.toCommonWorld = function (mte, ren, ben, jumpBtn, attackBtn)
 	timer.performWithDelay(transitionTime, focusCameraInBen) 
 	attackBtn.isVisible = false
 	jumpBtn.isVisible = true
+	audio.play(st, {channel=audio.findFreeChannel(), loops=-1})
 
 	return ben
 end
 
-util.setInitialWorld = function(destinyId, mte, ben, ren, jumpBtn, attackBtn)
+util.setInitialWorld = function(destinyId, mte, ben, ren, jumpBtn, attackBtn, stC, stU)
 	local currentChar = ben
 	if(destinyId > 0) then
 		--common world
-		mte.setCameraFocus(nil)
 		ren.gravityScale = 0
 		ben.gravityScale = 1
 		mte.physics.setGravity(0, 50)
 		focusCameraInBen()
 		attackBtn.isVisible = false
+		backgroundMusicChannel = audio.play(stC, {channel=audio.findFreeChannel(), loops=-1})
 	else 
-		mte.setCameraFocus(nil)
 		ren.gravityScale = 1
 		ben.gravityScale = 0
 		mte.physics.setGravity(0, -200)
 		focusCameraInRen()
 		currentChar = ren
 		jumpBtn.isVisible = false
+		backgroundMusicChannel = audio.play(stU, {channel=audio.findFreeChannel(), loops=-1})
 	end
 
 	return currentChar
