@@ -255,5 +255,47 @@ loader.loadMap = function (mapPath, mte)
 	mte.addSprite(backdrop, setup)
 end
 
+loader.loadUpSideRain = function(mte)
+	local physics = mte.physics
+	local physicsVentGroup = CBE.newVentGroup({
+		{
+			title = "rain1", -- Though the preset already names the vent "snow", always title!
+			preset = "rain",
+			alpha = 0.5,
+			build = function()
+				return display.newRect(0, 0, 2, 80)
+			end,
+			onVentInit = function(v)
+				v:setMovementScale(0) -- Make the vent's internal movement scale zero, which means particles will not be moved by the vent
+			end,
+			onCreation = function(p, v)
+				physics.addBody(p, {density = 55, radius = p.width * 0.5})
+				p.rotation = 310
+				p.isFixedRotation = true
+				p:applyLinearImpulse(-5, -5)
+			end
+		},
 
+		{
+			title = "rain2", -- Though the preset already names the vent "snow", always title!
+			preset = "rain",
+			alpha = 0.5,
+			build = function()
+				return display.newRect(0, 0, 2, 50)
+			end,
+			onVentInit = function(v)
+				v:setMovementScale(0) -- Make the vent's internal movement scale zero, which means particles will not be moved by the vent
+			end,
+			onCreation = function(p, v)
+				physics.addBody(p, {density = 50, radius = p.width * 0.5})
+				p.rotation = 310
+				p.isFixedRotation = true
+				p:applyLinearImpulse(-5, -5)
+			end
+		}
+	})
+
+	physicsVentGroup:move("rain1", display.contentCenterX, display.contentHeight + 100)
+	physicsVentGroup:move("rain2", 0, display.contentHeight + 100)
+end
 return loader

@@ -149,6 +149,10 @@ function scene:create(event)
 	sceneGroup:insert(gateBtn)
 end
 
+function rain()
+
+end
+
 function goAhead(event)
 	if ( event.phase == "began" ) then
         playerWalkingAhead = true
