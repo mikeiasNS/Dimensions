@@ -27,6 +27,7 @@ util.toCommonWorld = function (mte, ren, ben, jumpBtn, attackBtn, st)
 	timer.performWithDelay(transitionTime, focusCameraInBen) 
 	attackBtn.isVisible = false
 	jumpBtn.isVisible = true
+	audio.stop()
 	audio.play(st, {channel=audio.findFreeChannel(), loops=-1})
 
 	return ben

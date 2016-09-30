@@ -10,14 +10,16 @@ local mte = require("MTE.mte").createMTE()
 local loader = require("loader")
 local util = require("utils")
 local ben, ren, enemies
+local rain
 
 local currentChar
 
 local playerWalkingAhead, playerWalkingBack = false, false
 local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
 
-local deBoa = audio.loadStream("sound/de_boa.wav")
+local deBoa = audio.loadStream("sound/de_boa.mp3")
 local eita = audio.loadStream("sound/eita.wav")
+local rainSound = audio.loadStream("sound/rain.mp3")
 local laser = audio.loadSound("sound/laser1.wav")
 
 local backGroundEitaChannel, backgroundMusicChannel
@@ -31,6 +33,7 @@ local groundName = "ground"
 
 local function die()
 	audio.stop()
+	rain:stop("rain1", "rain2")
 
 	mte.physics.setGravity(0, 0)
 	local options = {
@@ -44,6 +47,7 @@ end
 
 local function restart()
 	audio.stop()
+	rain:stop("rain1", "rain2")
 
 	mte.physics.setGravity(0, 0)
 	local options = {
@@ -141,6 +145,9 @@ function scene:create(event)
 		objects[k].gravityScale = 0
 	end
 
+	rain = loader.loadUpSideRain(mte)
+	makeRain()
+
 	sceneGroup:insert(map)
 	sceneGroup:insert(aheadBtn)
 	sceneGroup:insert(backBtn)
@@ -149,8 +156,13 @@ function scene:create(event)
 	sceneGroup:insert(gateBtn)
 end
 
-function rain()
-
+function makeRain()
+	if currentChar == ren then 		
+		rain:start("rain2", "rain1")
+		audio.play(rainSound, {channel=audio.findFreeChannel(), loops=-1})
+	else 
+		rain:stop("rain1", "rain2")
+	end
 end
 
 function goAhead(event)
@@ -237,6 +249,7 @@ function swapWorld(event)
 		end
 	end
 	gateBtn.isVisible = false
+	makeRain()
 end
 
 function handleMove(event)	

@@ -1,5 +1,6 @@
 local widget = require "widget"
 local util = require ("utils")
+local CBE = require ("CBE.CBE")
 
 local loader = {}
 
@@ -261,41 +262,38 @@ loader.loadUpSideRain = function(mte)
 		{
 			title = "rain1", -- Though the preset already names the vent "snow", always title!
 			preset = "rain",
-			alpha = 0.5,
+			alpha = 0.2,
 			build = function()
-				return display.newRect(0, 0, 2, 80)
-			end,
-			onVentInit = function(v)
-				v:setMovementScale(0) -- Make the vent's internal movement scale zero, which means particles will not be moved by the vent
-			end,
-			onCreation = function(p, v)
-				physics.addBody(p, {density = 55, radius = p.width * 0.5})
+				local p = display.newRect(0, 0, 2, 80)
 				p.rotation = 310
-				p.isFixedRotation = true
-				p:applyLinearImpulse(-5, -5)
-			end
+				return p
+			end,
+			physics = {
+				gravityY = -2,
+				gravityX = -1
+			}
 		},
 
 		{
 			title = "rain2", -- Though the preset already names the vent "snow", always title!
 			preset = "rain",
-			alpha = 0.5,
+			alpha = 0.2,
 			build = function()
-				return display.newRect(0, 0, 2, 50)
-			end,
-			onVentInit = function(v)
-				v:setMovementScale(0) -- Make the vent's internal movement scale zero, which means particles will not be moved by the vent
-			end,
-			onCreation = function(p, v)
-				physics.addBody(p, {density = 50, radius = p.width * 0.5})
+				local p = display.newRect(0, 0, 2, 80)
 				p.rotation = 310
-				p.isFixedRotation = true
-				p:applyLinearImpulse(-5, -5)
-			end
+				return p
+			end,
+			physics = {
+				gravityY = -2,
+				gravityX = -1
+			}
 		}
 	})
 
-	physicsVentGroup:move("rain1", display.contentCenterX, display.contentHeight + 100)
-	physicsVentGroup:move("rain2", 0, display.contentHeight + 100)
+	physicsVentGroup:move("rain1", 0, display.contentHeight + 50)
+	physicsVentGroup:move("rain2", display.contentCenterX + 300, display.contentHeight + 50)
+
+	return physicsVentGroup
 end
+
 return loader
