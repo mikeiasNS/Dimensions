@@ -16,8 +16,9 @@ local currentChar
 local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
 local OdihnaBG = audio.loadStream("sound/de_boa.mp3")
 local rainSound = audio.loadStream("sound/rain.mp3")
-local laser = audio.loadSound("sound/laser1.wav")
+local laserSound = audio.loadSound("sound/laser1.wav")
 local destinationObjName
+local hpRect
 
 --collision names
 local benName = "ben"
@@ -42,9 +43,23 @@ local function onCharCollision(self, event)
 		destinationObjName = string.match(event.other.name, "B..%d")
 		gateBtn.isVisible = true
 	elseif event.other.name == "death" then
-		util.die(rain)
+		currentChar.hp = currentChar.hp - 1
 	elseif string.find(event.other.name, "end") then
 		util.restart(rain)
+	end
+end
+
+local function drawHP()
+	if hpRect ~= nil then
+		hpRect:removeSelf()
+	end
+	
+	if currentChar.hp > 0 then
+		hpRect = display.newRoundedRect( backBtn.x, display.contentHeight - display.contentHeight * 0.87, currentChar.hp * 3, 30, 10 )
+		hpRect.anchorX = 0
+		hpRect:setFillColor(1, 0, 0)
+	else
+		util.die(rain)
 	end
 end
 
@@ -78,12 +93,14 @@ function scene:create(event)
 
 	currentChar = util.setInitialWorld(event.params.destinyId, ben, ren)
 	mte.update()
+	drawHP()
 
 	for k,v in pairs(objects) do
 		objects[k].gravityScale = 0
 	end
 
 	sceneGroup:insert(map)
+	sceneGroup:insert(hpRect)
 	sceneGroup:insert(aheadBtn)
 	sceneGroup:insert(backBtn)
 	sceneGroup:insert(jumpBtn)
@@ -136,6 +153,7 @@ end
 
 function handleMove(event)	
 	mte.update()
+	drawHP()
 	if string.find(currentChar.sequence, "walk") then
 		if(string.find(currentChar.sequence, "Ahead")) then 
 			currentChar.x = currentChar.x + 5

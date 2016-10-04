@@ -17,8 +17,9 @@ chars.loadBen = function (objName)
 	ben.isFixedRotation = true
 	mte.addSprite(ben, setup)
 
-	ben.jump = false
+	ben.jump = 0
 	ben.jumpForce = -150
+	ben.hp = 100
 
 	return ben
 end
@@ -37,12 +38,12 @@ chars.loadRen = function (objName)
 	local ren = display.newSprite(renSpriteSheet, renSequenceData)
 	local renSetup = {layer = 3, kind = "sprite", levelPosX = renProperties[1].x, levelPosY = renProperties[1].y}	
 	mte.physics.addBody(ren, "dynamic", {friction = 0.2, bounce = 0.0, density = 2 })
-	ren.gravityScale = 0
 	ren.isFixedRotation = true
 	mte.addSprite(ren, renSetup)
 
 	ren.jump = 0
 	ren.jumpForce = 0
+	ren.hp = 100
 
 	return ren
 end
