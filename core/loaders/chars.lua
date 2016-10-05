@@ -20,6 +20,7 @@ chars.loadBen = function (objName)
 	ben.jump = 0
 	ben.jumpForce = -150
 	ben.hp = 100
+	ben.hpBonus = 0
 
 	return ben
 end
@@ -44,6 +45,7 @@ chars.loadRen = function (objName)
 	ren.jump = 0
 	ren.jumpForce = 0
 	ren.hp = 100
+	ren.hpBonus = 0
 
 	return ren
 end

@@ -19,6 +19,7 @@ local rainSound = audio.loadStream("sound/rain.mp3")
 local laserSound = audio.loadSound("sound/laser1.wav")
 local destinationObjName
 local hpRect
+local headStatusRect
 
 --collision names
 local benName = "ben"
@@ -43,22 +44,39 @@ local function onCharCollision(self, event)
 		destinationObjName = string.match(event.other.name, "B..%d")
 		gateBtn.isVisible = true
 	elseif event.other.name == "death" then
-		currentChar.hp = currentChar.hp - 1
+		print(event.phase)
+		if event.phase == "began" then
+			currentChar.hpBonus = -1
+		else
+			currentChar.hpBonus = 0
+		end
 	elseif string.find(event.other.name, "end") then
 		util.restart(rain)
 	end
 end
 
-local function drawHP()
+local function setupStatus()
 	if hpRect ~= nil then
 		hpRect:removeSelf()
+		headStatusRect:removeSelf()
 	end
+	currentChar.hp = currentChar.hp + currentChar.hpBonus
+
+	hpRect = display.newRoundedRect(backBtn.x + 100, display.contentHeight - display.contentHeight * 0.87, currentChar.hp * 3, 30, 0)
+	hpRect.anchorX = 0
+	hpRect:setFillColor(1, 0, 0)
+
+	local imgName = "images/headA.png"
+
+	if string.find(currentChar.sequence, "Back") then
+		imgName = "images/headB.png"
+	end
+
+	headStatusRect = display.newImageRect(imgName, 100, 100)
+	headStatusRect.x , headStatusRect.y = backBtn.x + 20, hpRect.y
+	headStatusRect:setFillColor(1, 1, 1)
 	
-	if currentChar.hp > 0 then
-		hpRect = display.newRoundedRect( backBtn.x, display.contentHeight - display.contentHeight * 0.87, currentChar.hp * 3, 30, 10 )
-		hpRect.anchorX = 0
-		hpRect:setFillColor(1, 0, 0)
-	else
+	if currentChar.hp <= 0 then
 		util.die(rain)
 	end
 end
@@ -93,7 +111,7 @@ function scene:create(event)
 
 	currentChar = util.setInitialWorld(event.params.destinyId, ben, ren)
 	mte.update()
-	drawHP()
+	setupStatus()
 
 	for k,v in pairs(objects) do
 		objects[k].gravityScale = 0
@@ -153,7 +171,7 @@ end
 
 function handleMove(event)	
 	mte.update()
-	drawHP()
+	setupStatus()
 	if string.find(currentChar.sequence, "walk") then
 		if(string.find(currentChar.sequence, "Ahead")) then 
 			currentChar.x = currentChar.x + 5
@@ -191,6 +209,7 @@ function scene:destroy(event)
 	backBtn:removeSelf()
 	jumpBtn:removeSelf()
 	aheadBtn:removeSelf()
+	headStatusRect:removeSelf()
 	backBtn, jumpBtn, aheadBtn = nil, nil, nil
 	timer.performWithDelay(500, mte.cleanup)
 end
