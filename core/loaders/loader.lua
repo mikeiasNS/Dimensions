@@ -2,6 +2,7 @@ local buttonsLoader = require ("core.loaders.buttons")
 local effectsLoader = require ("core.loaders.effects")
 local sceneLoader = require ("core.loaders.scene")
 local charsLoader = require ("core.loaders.chars")
+local enemiesLoader = require ("core.loaders.enemies")
 
 local loader = {}
 
@@ -20,5 +21,7 @@ loader.loadMenuButtons = buttonsLoader.loadMenuButtons
 loader.loadMap = sceneLoader.loadMap
 
 loader.loadUpSideRain = effectsLoader.loadUpSideRain
+
+loader.loadEnemies = enemiesLoader.loadEnemies
 
 return loader

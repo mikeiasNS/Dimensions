@@ -113,6 +113,8 @@ function scene:create(event)
 	mte.update()
 	setupStatus()
 
+	loader.loadEnemies()
+
 	for k,v in pairs(objects) do
 		objects[k].gravityScale = 0
 	end
@@ -210,6 +212,7 @@ function scene:destroy(event)
 	jumpBtn:removeSelf()
 	aheadBtn:removeSelf()
 	headStatusRect:removeSelf()
+	hpRect:removeSelf()
 	backBtn, jumpBtn, aheadBtn = nil, nil, nil
 	timer.performWithDelay(500, mte.cleanup)
 end
