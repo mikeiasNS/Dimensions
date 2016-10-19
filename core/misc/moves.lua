@@ -63,6 +63,8 @@ moves.onLaserCollision = function(self, event)
 		if event.other.x <= mte.getCamera().levelPosX + display.contentHeight then
 			if event.other.type == "destructible" then
 				event.other:removeSelf()
+			elseif event.other.name == "Enemy" then
+				event.other.hp = event.other.hp - 20
 			end
 
 			if event.other.name == "crate" then

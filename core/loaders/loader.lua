@@ -24,4 +24,6 @@ loader.loadUpSideRain = effectsLoader.loadUpSideRain
 
 loader.loadEnemies = enemiesLoader.loadEnemies
 
+loader.updateEnemies = enemiesLoader.updateEnemies
+
 return loader

@@ -66,10 +66,18 @@ local function setupStatus()
 	hpRect.anchorX = 0
 	hpRect:setFillColor(1, 0, 0)
 
-	local imgName = "images/headA.png"
+	local imgName = "images/"
+
+	if currentChar.name == benName then
+		imgName = imgName.."B"
+	else 
+		imgName = imgName.."R"
+	end
 
 	if string.find(currentChar.sequence, "Back") then
-		imgName = "images/headB.png"
+		imgName = imgName.."headB.png"
+	else 
+		imgName = imgName.."headA.png"
 	end
 
 	headStatusRect = display.newImageRect(imgName, 100, 100)
@@ -113,7 +121,7 @@ function scene:create(event)
 	mte.update()
 	setupStatus()
 
-	loader.loadEnemies()
+	enemies = loader.loadEnemies()
 
 	for k,v in pairs(objects) do
 		objects[k].gravityScale = 0
@@ -141,6 +149,7 @@ function jump(event)
 end
 
 function fire(event)
+	audio.play(laserSound)
 	util.fire(currentChar, event)
 end
 
@@ -174,6 +183,9 @@ end
 function handleMove(event)	
 	mte.update()
 	setupStatus()
+
+	loader.updateEnemies(enemies)
+
 	if string.find(currentChar.sequence, "walk") then
 		if(string.find(currentChar.sequence, "Ahead")) then 
 			currentChar.x = currentChar.x + 5

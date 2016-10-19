@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="120" tilewidth="32" tileheight="32" nextobjectid="78">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="120" tilewidth="32" tileheight="32" nextobjectid="79">
  <tileset firstgid="1" name="ground_elements" tilewidth="32" tileheight="32" spacing="2" margin="1" tilecount="24" columns="6">
   <image source="tilesets/ground_elements.png" width="204" height="136"/>
   <tile id="0">
@@ -385,12 +385,16 @@
   </object>
   <object id="76" name="Enemy" type="Raptor1" x="848" y="2624" width="333" height="205">
    <properties>
+    <property name="firstSequence" value="walkingBack"/>
+    <property name="moveLoop" value="{200, 0, 0, 0}"/>
+    <property name="moveSequences" value="{&quot;walkingBack&quot;, &quot;&quot;, &quot;walkingAhead&quot;, &quot;&quot;}"/>
     <property name="numFrames" value="6"/>
     <property name="sequence:stoppedAhead" value="{1}"/>
     <property name="sequence:stoppedBack" value="{4}"/>
     <property name="sequence:walkingAhead" value="{2,3}"/>
     <property name="sequence:walkingBack" value="{5,6}"/>
     <property name="spriteImagePath" value="images/raptor_sprite.png"/>
+    <property name="stepValue" value="5"/>
     <property name="walkingAhead:time" value="800"/>
     <property name="walkingBack:time" value="800"/>
    </properties>

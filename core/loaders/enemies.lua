@@ -1,7 +1,7 @@
 local enemies_loader = {}
 
 --[[
-	> All enemies must have the following properties in Tiled
+	> Enemies properties on Tiled
 		> 'spriteImagePath'
 			'-> The path for the sprite image :p : String
 		> 'numFrames'
@@ -13,14 +13,20 @@ local enemies_loader = {}
 						sequence:walkingBack | {4,5,6}
 		> 'sequence_name:time' (opt) 
 			'-> Time of the sequence : String
-				Obs.: case not defined the default sequence_time defined in config file will be used 
+				Obs.: case not defined the default sequence_time 200 will be used 
 		> 'sequence_name:loopCount' (opt) 
 			'-> number of times that the sequence will happens when played : String
-				Obs.: case not defined the default sequence_loopCount defined in config file will be used 
+				Obs.: case not defined the default sequence_loopCount 0 will be used 
 		> 'attackPower' (opt)
 			'-> the damage that the attack will cause in other char : String 
 		> 'hp' (opt)
 			'-> The total HP of the enemy : String 
+		> 'moveLoop' (opt)
+			'-> A table with the distance to move relative with the initial postion
+				Obs.: This table must have the format {left, up, right, bottom}
+		> 'moveSequence' (opt)
+			'-> A table with the name of the sequences to be applied in each movimentation
+				Obs.: the same format of moveLoop, must to be seted if moveLoop be
 
 	> Enemies can't have the preCollision function overwritten.
 	> They have to receive the Name 'Enemy' in Tiled, and the type of your enemy to be loaded in EnemyByProperties function.
@@ -50,9 +56,9 @@ enemies_loader.enemyByProperties = function(properties)
 	for k, v in pairs(properties.properties) do
 		if string.find(k, "sequence:") then
 			local sequenceName = string.sub(k, 10)
-			local f = loadstring("return "..v)()
-			local t = tonumber(properties.properties[sequenceName..":time"]) or 200
-			local lc = tonumber(properties.properties[sequenceName..":loopCount"]) or 0
+			local f = loadstring("return "..v)() -- sequence frames
+			local t = tonumber(properties.properties[sequenceName..":time"]) or 200 -- sequence time
+			local lc = tonumber(properties.properties[sequenceName..":loopCount"]) or 0 -- sequence loopcount
 
 			table.insert(sequenceData, {name = sequenceName, sheet = spriteSheet, frames = f, time = t, loopCount = lc})
 		end
@@ -72,6 +78,19 @@ enemies_loader.enemyByProperties = function(properties)
 	enemy.hp = properties.properties.hp or 100
 	enemy.type = properties.type
 	enemy.framesBySequenceAndShapes = {}
+	enemy.name = properties.name
+
+	local moveLoopStr = properties.properties["moveLoop"] or "{}"
+	local moveSequencesStr = properties.properties["moveSequences"] or "{}"
+	enemy.moveLoop = loadstring("return "..moveLoopStr)()
+	enemy.moveSequences = loadstring("return "..moveSequencesStr)()
+	enemy.initialPosition = {x, y}
+	enemy.stepValue = properties.properties.stepValue or 10
+	enemy.flyStepValue = properties.properties.flyStepValue or 0
+	enemy.dead = false
+
+	enemy:setSequence( properties.properties["firstSequence"] )
+
 	for i, bodyShape in ipairs(physicsData[properties.type]) do
 		for j, sequence in ipairs(bodyShape.applyToSequences) do
 			if not enemy.framesBySequenceAndShapes[sequence] then
@@ -80,7 +99,6 @@ enemies_loader.enemyByProperties = function(properties)
 			enemy.framesBySequenceAndShapes[sequence][i] = bodyShape.applyToSequenceFrameIndexes[j]
 		end
 	end
-
 
 	return enemy
 end
@@ -92,6 +110,55 @@ enemies_loader.enemiesPreCollision = function(self, event)
 			event.contact.isEnabled = false
 		end
 	end
+end
+
+enemies_loader.updateEnemies = function(enemies) 
+	for i, enemy in ipairs(enemies) do
+		enemies_loader.updateEnemy(enemy)
+	end
+end
+
+enemies_loader.updateEnemy = function(enemy)
+	if enemy.dead then
+		return
+	end
+
+	if enemy.hp <= 0 then 
+		enemy.dead = true
+		enemy:removeSelf()
+	end
+
+	local currentSequence = enemy.sequence
+	local initialX = enemy.initialPosition[1]
+	local initialY = enemy.initialPosition[2]
+
+	if currentSequence == enemy.moveSequences[1] then --go left
+		if (enemy.x - enemy.stepValue) >= (initialX - enemy.moveLoop[1])  then
+			enemy.x = enemy.x - enemy.stepValue
+		else
+			enemy:setSequence(enemy.moveSequences[3])
+		end
+	elseif currentSequence == enemy.moveSequences[3] then --go right
+		if (enemy.x + enemy.stepValue) <= (initialX + enemy.moveLoop[3])  then
+			enemy.x = enemy.x + enemy.stepValue
+		else
+			enemy:setSequence(enemy.moveSequences[1])
+		end
+	elseif currentSequence == enemy.moveSequences[2] then --go up
+		if (enemy.y + enemy.flyStepValue) <= (initialY + enemy.moveLoop[2])  then
+			enemy.y = enemy.y + enemy.flyStepValue
+		else
+			enemy:setSequence(enemy.moveSequences[4])
+		end
+	elseif currentSequence == enemy.moveSequences[4] then --go bottom
+		if (enemy.y - enemy.flyStepValue) >= (initialY - enemy.moveLoop[4])  then
+			enemy.y = enemy.y - enemy.flyStepValue
+		else
+			enemy:setSequence(enemy.moveSequences[2])
+		end
+	end
+
+	enemy:play()
 end
 
 enemies_loader.tableContains = function(table, val) 
