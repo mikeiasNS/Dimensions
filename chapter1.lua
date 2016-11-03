@@ -184,7 +184,7 @@ function handleMove(event)
 	mte.update()
 	setupStatus()
 
-	loader.updateEnemies(enemies)
+	loader.updateEnemies(enemies, currentChar)
 
 	if string.find(currentChar.sequence, "walk") then
 		if(string.find(currentChar.sequence, "Ahead")) then 

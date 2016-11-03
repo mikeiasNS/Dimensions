@@ -12,8 +12,6 @@ loader.loadRen = charsLoader.loadRen
 
 loader.loadObjects = sceneLoader.loadObjects
 
-loader.loadEnemies = charsLoader.loadEnemies
-
 loader.loadButtons = buttonsLoader.loadButtons
 
 loader.loadMenuButtons = buttonsLoader.loadMenuButtons

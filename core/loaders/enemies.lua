@@ -67,7 +67,10 @@ enemies_loader.enemyByProperties = function(properties)
 	local enemy = display.newSprite(spriteSheet, sequenceData)
 	local x, y = properties.x + properties.width / 2, properties.y + properties.height / 2
 	local setup = {layer = 3, kind = "sprite", levelPosX = x, levelPosY = y, offscreenPhysics = true}
-	mte.physics.addBody(enemy, "dynamic", physicsData:get(properties.type))
+
+	enemyPhysics = physicsData:get(properties.type) or {friction = 0.2, bounce = 0.0, density = 1}
+
+	mte.physics.addBody(enemy, "dynamic", enemyPhysics)
 	enemy.isFixedRotation = true
 	mte.addSprite(enemy, setup)
 
@@ -87,16 +90,29 @@ enemies_loader.enemyByProperties = function(properties)
 	enemy.initialPosition = {x, y}
 	enemy.stepValue = properties.properties.stepValue or 10
 	enemy.flyStepValue = properties.properties.flyStepValue or 0
+
+	local canFollow = properties.properties.canFollow or "nil"
+	local followInX = properties.properties.followInX or "nil"
+	local followInY = properties.properties.followInY or "nil"
+
+	enemy.canFollow = loadstring("return "..canFollow)() or true
+	enemy.followInX = loadstring("return "..followInX)() or true
+	enemy.followInY = loadstring("return "..followInY)() or false
+
 	enemy.dead = false
 
 	enemy:setSequence( properties.properties["firstSequence"] )
 
-	for i, bodyShape in ipairs(physicsData[properties.type]) do
-		for j, sequence in ipairs(bodyShape.applyToSequences) do
-			if not enemy.framesBySequenceAndShapes[sequence] then
-				enemy.framesBySequenceAndShapes[sequence] = {}
+	if physicsData[properties.type] then
+		for i, bodyShape in ipairs(physicsData[properties.type]) do
+			if bodyShape.applyToSequences then
+				for j, sequence in ipairs(bodyShape.applyToSequences) do
+					if not enemy.framesBySequenceAndShapes[sequence] then
+						enemy.framesBySequenceAndShapes[sequence] = {}
+					end
+					enemy.framesBySequenceAndShapes[sequence][i] = bodyShape.applyToSequenceFrameIndexes[j]
+				end
 			end
-			enemy.framesBySequenceAndShapes[sequence][i] = bodyShape.applyToSequenceFrameIndexes[j]
 		end
 	end
 
@@ -105,20 +121,23 @@ end
 
 enemies_loader.enemiesPreCollision = function(self, event)
 	local shape = event.selfElement
-	if self.framesBySequenceAndShapes[self.sequence][shape] then
-		if not enemies_loader.tableContains(self.framesBySequenceAndShapes[self.sequence][shape], self.frame) then
-			event.contact.isEnabled = false
+
+	if self.framesBySequenceAndShapes[self.sequence] then
+		if self.framesBySequenceAndShapes[self.sequence][shape] then
+			if not enemies_loader.tableContains(self.framesBySequenceAndShapes[self.sequence][shape], self.frame) then
+				event.contact.isEnabled = false
+			end
 		end
 	end
 end
 
-enemies_loader.updateEnemies = function(enemies) 
+enemies_loader.updateEnemies = function(enemies, player) 
 	for i, enemy in ipairs(enemies) do
-		enemies_loader.updateEnemy(enemy)
+		enemies_loader.updateEnemy(enemy, player)
 	end
 end
 
-enemies_loader.updateEnemy = function(enemy)
+enemies_loader.updateEnemy = function(enemy, player)
 	if enemy.dead then
 		return
 	end
@@ -132,29 +151,66 @@ enemies_loader.updateEnemy = function(enemy)
 	local initialX = enemy.initialPosition[1]
 	local initialY = enemy.initialPosition[2]
 
-	if currentSequence == enemy.moveSequences[1] then --go left
-		if (enemy.x - enemy.stepValue) >= (initialX - enemy.moveLoop[1])  then
-			enemy.x = enemy.x - enemy.stepValue
-		else
-			enemy:setSequence(enemy.moveSequences[3])
-		end
-	elseif currentSequence == enemy.moveSequences[3] then --go right
-		if (enemy.x + enemy.stepValue) <= (initialX + enemy.moveLoop[3])  then
-			enemy.x = enemy.x + enemy.stepValue
-		else
+	local camX, camY = mte.getCamera().levelPosX, mte.getCamera().levelPosY
+	local screenW, screenH = display.contentWidth, display.contentHeight;
+
+	local startCamX, startCamY = camX - screenW / 2, camY - screenH / 2;
+
+	local isEnemyOnScreen = enemy.x > startCamX and enemy.x < startCamX + screenW
+
+	local canFollow = enemy.canFollow
+
+	if player.jump > 0 then
+		canFollow = false
+	end
+
+	if isEnemyOnScreen and canFollow then
+		-- follow player
+		if player.x < enemy.x and enemy.followInX then
+			--follow left
 			enemy:setSequence(enemy.moveSequences[1])
+			enemy.x = enemy.x - enemy.stepValue
+		elseif player.x > enemy.x and enemy.followInX then
+			--follow right
+			enemy:setSequence(enemy.moveSequences[3])
+			enemy.x = enemy.x + enemy.stepValue
 		end
-	elseif currentSequence == enemy.moveSequences[2] then --go up
-		if (enemy.y + enemy.flyStepValue) <= (initialY + enemy.moveLoop[2])  then
-			enemy.y = enemy.y + enemy.flyStepValue
-		else
-			enemy:setSequence(enemy.moveSequences[4])
-		end
-	elseif currentSequence == enemy.moveSequences[4] then --go bottom
-		if (enemy.y - enemy.flyStepValue) >= (initialY - enemy.moveLoop[4])  then
-			enemy.y = enemy.y - enemy.flyStepValue
-		else
+
+		if player.y > enemy.y and enemy.followInY then
+			--follow up
 			enemy:setSequence(enemy.moveSequences[2])
+			enemy.y = enemy.y + enemy.flyStepValue
+		elseif player.y < enemy.y and enemy.followInY then
+			--follow down
+			enemy:setSequence(enemy.moveSequences[4])
+			enemy.y = enemy.y - enemy.flyStepValue
+		end
+	else
+		-- movimentation loop
+		if currentSequence == enemy.moveSequences[1] then --go left
+			if (enemy.x - enemy.stepValue) >= (initialX - enemy.moveLoop[1])  then
+				enemy.x = enemy.x - enemy.stepValue
+			else
+				enemy:setSequence(enemy.moveSequences[3])
+			end
+		elseif currentSequence == enemy.moveSequences[3] then --go right
+			if (enemy.x + enemy.stepValue) <= (initialX + enemy.moveLoop[3])  then
+				enemy.x = enemy.x + enemy.stepValue
+			else
+				enemy:setSequence(enemy.moveSequences[1])
+			end
+		elseif currentSequence == enemy.moveSequences[2] then --go up
+			if (enemy.y + enemy.flyStepValue) <= (initialY + enemy.moveLoop[2])  then
+				enemy.y = enemy.y + enemy.flyStepValue
+			else
+				enemy:setSequence(enemy.moveSequences[4])
+			end
+		elseif currentSequence == enemy.moveSequences[4] then --go bottom
+			if (enemy.y - enemy.flyStepValue) >= (initialY - enemy.moveLoop[4])  then
+				enemy.y = enemy.y - enemy.flyStepValue
+			else
+				enemy:setSequence(enemy.moveSequences[2])
+			end
 		end
 	end
 
