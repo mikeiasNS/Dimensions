@@ -39,6 +39,12 @@ scene.loadObjects = function()
 			obj:addEventListener("preCollision")
 	 	end
 
+	 	if objProperties[k].properties.onCollide then
+	 		print("boto")
+	 		obj.collision = loadstring(objProperties[k].properties.onCollide) 
+	 		obj:addEventListener("collision")
+	 	end
+
 	 	objects[obj.id] = obj
 	end
 

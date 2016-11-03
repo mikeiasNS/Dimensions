@@ -39,9 +39,11 @@ enemies_loader.loadEnemies = function ()
 	local enemies = {}
 	local enemiesProperties = mte.getObject({name = "Enemy"})
 
-	for k, currentEnemy in pairs(enemiesProperties) do
-		local enemy = enemies_loader.enemyByProperties(currentEnemy)
-		table.insert(enemies, enemy)
+	if enemiesProperties then
+		for k, currentEnemy in pairs(enemiesProperties) do
+			local enemy = enemies_loader.enemyByProperties(currentEnemy)
+			table.insert(enemies, enemy)
+		end
 	end
 
 	return enemies

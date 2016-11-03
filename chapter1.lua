@@ -5,6 +5,7 @@ mte = require("MTE.mte").createMTE()
 local loader = require("core.loaders.loader")
 local util = require("core.misc.utils")
 local constants = require("core.misc.constants")
+local dialogs = require("core.misc.dialogs")
 
 display.setStatusBar( display.HiddenStatusBar )
 display.setDefault( "magTextureFilter", "nearest" )
@@ -13,13 +14,14 @@ system.activate("multitouch")
 local ben, ren, enemies
 local rain
 local currentChar
-local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
+local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn
 local OdihnaBG = audio.loadStream("sound/de_boa.mp3")
 local rainSound = audio.loadStream("sound/rain.mp3")
 local laserSound = audio.loadSound("sound/laser1.wav")
 local destinationObjName
 local hpRect
 local headStatusRect
+local paused = false
 
 --collision names
 local benName = "ben"
@@ -89,7 +91,26 @@ local function setupStatus()
 	end
 end
 
+function dialogListener(event)
+	if not paused then
+		playPause()
+	end
+
+	local dialog = dialogs[event.id]
+
+	local dialogRect = display.newRect(backBtn.x + 20, hpRect.y + 10, display.contentWidth - 40, display.contentHeight * 0.3)
+	dialogRect.anchorX, dialogRect.anchorY = 0, 0
+	dialogRect.dialog = dialog
+	dialogRect:setFillColor(0, 0, 1)
+
+	local str = dialog.content[1]
+	local firstText = display.newText(str, dialogRect.x + 5, dialogRect.y + 10, dialogRect.width, 0, native.systemFont)
+	firstText.anchorX, firstText.anchorY = 0, 0
+	firstText:setFillColor(1, 1, 1)
+end
+
 function scene:create(event)
+	print("hum")
 	local sceneGroup = self.view
 
 	--ENABLE PHYSICS -----------------------------------------------------------------------
@@ -114,7 +135,7 @@ function scene:create(event)
 	ben:addEventListener("collision")
 	ben.name = benName
 
-	backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn = loader.loadButtons()
+	backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn = loader.loadButtons()
 	gateBtn.isVisible = false
 
 	currentChar = util.setInitialWorld(event.params.destinyId, ben, ren)
@@ -127,6 +148,8 @@ function scene:create(event)
 		objects[k].gravityScale = 0
 	end
 
+	map:addEventListener("dialog", dialogListener)
+
 	sceneGroup:insert(map)
 	sceneGroup:insert(hpRect)
 	sceneGroup:insert(aheadBtn)
@@ -134,6 +157,7 @@ function scene:create(event)
 	sceneGroup:insert(jumpBtn)
 	sceneGroup:insert(attackBtn)
 	sceneGroup:insert(gateBtn)
+	sceneGroup:insert(pauseBtn)
 end
 
 function goAhead(event)
@@ -164,6 +188,15 @@ function swapWorld(event)
 	end
 end
 
+function playPause(event)
+	paused = not paused
+	backBtn:setEnabled(not paused)
+	aheadBtn:setEnabled(not paused)
+	jumpBtn:setEnabled(not paused)
+	attackBtn:setEnabled(not paused)
+	gateBtn:setEnabled(not paused)
+end
+
 function onWorldChanged(event) 
 	audio.stop()
 	gateBtn.isVisible = false
@@ -184,7 +217,9 @@ function handleMove(event)
 	mte.update()
 	setupStatus()
 
-	loader.updateEnemies(enemies, currentChar)
+	if not paused then
+		loader.updateEnemies(enemies, currentChar)
+	end
 
 	if string.find(currentChar.sequence, "walk") then
 		if(string.find(currentChar.sequence, "Ahead")) then 

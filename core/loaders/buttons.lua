@@ -55,7 +55,17 @@ buttonsLoader.loadButtons = function ()
 	}
 	gateBtn.x, gateBtn.y = display.contentCenterX, jumpBtn.y
 
-	return backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn
+	pauseBtn = widget.newButton{
+		label="",
+		defaultFile="images/pause.png",
+		width = display.contentHeight * 0.15, 
+		height= display.contentHeight * 0.15, 
+		onPress = playPause
+	}
+	pauseBtn.x, pauseBtn.y = display.contentWidth * 0.8, display.contentHeight * 0.1
+
+
+	return backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn
 end
 
 buttonsLoader.loadMenuButtons = function ()

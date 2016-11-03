@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="120" tilewidth="32" tileheight="32" nextobjectid="81">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="120" tilewidth="32" tileheight="32" nextobjectid="83">
  <tileset firstgid="1" name="ground_elements" tilewidth="32" tileheight="32" spacing="2" margin="1" tilecount="24" columns="6">
   <image source="tilesets/ground_elements.png" width="204" height="136"/>
   <tile id="0">
@@ -383,22 +383,6 @@
     <property name="path" value="images/objects/totem.png"/>
    </properties>
   </object>
-  <object id="76" name="Enemy" type="Raptor1" x="1116.47" y="2626.78" width="66" height="41">
-   <properties>
-    <property name="firstSequence" value="walkingBack"/>
-    <property name="moveLoop" value="{200, 0, 0, 0}"/>
-    <property name="moveSequences" value="{&quot;walkingBack&quot;, &quot;&quot;, &quot;walkingAhead&quot;, &quot;&quot;}"/>
-    <property name="numFrames" value="6"/>
-    <property name="sequence:stoppedAhead" value="{1}"/>
-    <property name="sequence:stoppedBack" value="{4}"/>
-    <property name="sequence:walkingAhead" value="{2,3}"/>
-    <property name="sequence:walkingBack" value="{5,6}"/>
-    <property name="spriteImagePath" value="images/raptor_sprite_small.png"/>
-    <property name="stepValue" value="5"/>
-    <property name="walkingAhead:time" value="800"/>
-    <property name="walkingBack:time" value="800"/>
-   </properties>
-  </object>
  </objectgroup>
  <layer name="transicao" width="100" height="120">
   <data encoding="csv">
@@ -693,24 +677,21 @@
    </properties>
   </object>
   <object id="74" gid="25" x="312.463" y="1450.78" width="337" height="427"/>
-  <object id="80" name="Enemy" type="Raptor1" x="1193.13" y="1396.56" width="66" height="41">
+  <object id="82" name="sceneObj" x="615.152" y="1354.55" width="61" height="80">
    <properties>
-    <property name="firstSequence" value="walkingBack"/>
-    <property name="moveLoop" value="{200, 0, 0, 0}"/>
-    <property name="moveSequences" value="{&quot;walkingBack&quot;, &quot;&quot;, &quot;walkingAhead&quot;, &quot;&quot;}"/>
-    <property name="numFrames" value="6"/>
-    <property name="sequence:stoppedAhead" value="{1}"/>
-    <property name="sequence:stoppedBack" value="{4}"/>
-    <property name="sequence:walkingAhead" value="{2,3}"/>
-    <property name="sequence:walkingBack" value="{5,6}"/>
-    <property name="spriteImagePath" value="images/raptor_sprite_small.png"/>
-    <property name="stepValue" value="5"/>
-    <property name="walkingAhead:time" value="800"/>
-    <property name="walkingBack:time" value="800"/>
+    <property name="name" value="scarf"/>
+    <property name="onCollide">if event.other.name == &quot;Ben&quot;or event.other.name == &quot;Ren&quot; then
+	timer.performWithDelay( 100, self.removeSelf );
+	event.other.jump = 2;
+	
+	local dialogEvent { name=&quot;dialog&quot;, id=&quot;initial_info&quot; };
+	event.other:dispatchEvent(dialogEvent);
+end</property>
+    <property name="path" value="images/scarf.png"/>
    </properties>
   </object>
  </objectgroup>
- <objectgroup color="#ff0000" name="frontObj">
-  <object id="75" gid="26" x="655.152" y="1450.78" width="337" height="427"/>
+ <objectgroup color="#ff0000" name="frontObj" visible="0">
+  <object id="75" gid="26" x="645.152" y="1450.78" width="337" height="427"/>
  </objectgroup>
 </map>
