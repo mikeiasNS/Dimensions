@@ -62,7 +62,8 @@ buttonsLoader.loadButtons = function ()
 		height= display.contentHeight * 0.15, 
 		onPress = playPause
 	}
-	pauseBtn.x, pauseBtn.y = display.contentWidth * 0.8, display.contentHeight * 0.1
+	pauseBtn.x, pauseBtn.y = jumpBtn.x, display.contentHeight * 0.1
+	pauseBtn.alpha = 0.5
 
 
 	return backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn

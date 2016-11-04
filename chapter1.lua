@@ -91,6 +91,12 @@ local function setupStatus()
 	end
 end
 
+function dialogIterator(event) 
+	if event.phase == "began" then
+		showTextInDlgRect(event.target)
+	end
+end
+
 function dialogListener(event)
 	if not paused then
 		playPause()
@@ -98,19 +104,71 @@ function dialogListener(event)
 
 	local dialog = dialogs[event.id]
 
-	local dialogRect = display.newRect(backBtn.x + 20, hpRect.y + 10, display.contentWidth - 40, display.contentHeight * 0.3)
+	--dialog box
+	local dlgX = aheadBtn.x + aheadBtn.width / 2 + 10
+	local dlgY = aheadBtn.y - display.contentHeight * 0.25
+
+	local dialogRect = display.newRoundedRect(dlgX, dlgY, display.contentWidth, display.contentHeight * 0.3, 10)
 	dialogRect.anchorX, dialogRect.anchorY = 0, 0
 	dialogRect.dialog = dialog
 	dialogRect:setFillColor(0, 0, 1)
+	dialogRect.alpha = 0.8
 
-	local str = dialog.content[1]
-	local firstText = display.newText(str, dialogRect.x + 5, dialogRect.y + 10, dialogRect.width, 0, native.systemFont)
-	firstText.anchorX, firstText.anchorY = 0, 0
-	firstText:setFillColor(1, 1, 1)
+	--dialog imgs
+	local img1 = display.newImageRect(dialog.img_one_path, 100, 100)
+	img1.anchorX = 0
+	img1.x, img1.y = dialogRect.x, dialogRect.y + dialogRect.height / 2
+
+	local img2 = display.newImageRect(dialog.img_two_path, 100, 100)
+	img2.anchorX = 1
+	img2.x, img2.y = dialogRect.width + dialogRect.x, dialogRect.y + dialogRect.height / 2
+
+	dialogRect.img1 = img1
+	dialogRect.img2 = img2
+
+	--dialog text
+	showTextInDlgRect(dialogRect)
+
+	dialogRect:addEventListener( "touch", dialogIterator )
+end
+
+function showTextInDlgRect(dlgRect) 
+	local index = 1
+	if dlgRect.currentText then
+		dlgRect.currentText:removeSelf()
+		index = dlgRect.currentTextI + 1
+	end
+
+	if #dlgRect.dialog.content >= index then
+		local str = string.sub(dlgRect.dialog.content[index], 6) 
+		local txtX, txtY = dlgRect.x + dlgRect.img1.width + 5, dlgRect.y + 20
+		local txtW = dlgRect.width - (dlgRect.img1.width + dlgRect.img2.width) - 5
+
+		local text = display.newText(str, txtX, txtY, txtW , 0, native.systemFont)
+		text.anchorX, text.anchorY = 0, 0
+		text:setFillColor(1, 1, 1)
+
+		dlgRect.currentText = text
+		dlgRect.currentTextI = index
+
+		if string.sub(dlgRect.dialog.content[index], 1, 4) == "%01%" then 
+			-- 01 speaking
+			dlgRect.img1.alpha = 1
+			dlgRect.img2.alpha = 0.5
+		else
+			-- 02 speaking
+			dlgRect.img2.alpha = 1
+			dlgRect.img1.alpha = 0.5
+		end
+	else
+		dlgRect.img1:removeSelf()
+		dlgRect.img2:removeSelf()
+		dlgRect:removeSelf()
+		playPause()
+	end
 end
 
 function scene:create(event)
-	print("hum")
 	local sceneGroup = self.view
 
 	--ENABLE PHYSICS -----------------------------------------------------------------------
@@ -189,6 +247,12 @@ function swapWorld(event)
 end
 
 function playPause(event)
+	if string.find(currentChar.sequence, "head") then
+		currentChar:setSequence("stoppedAhead")
+	else
+		currentChar:setSequence("stoppedBack")
+	end
+
 	paused = not paused
 	backBtn:setEnabled(not paused)
 	aheadBtn:setEnabled(not paused)
