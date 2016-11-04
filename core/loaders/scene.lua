@@ -19,7 +19,23 @@ scene.loadObjects = function()
 		local density = objProperties[k].properties.density or 0
 
 		local objSpriteSheet = graphics.newImageSheet(path, {width = w, height = h, numFrames = numFrames});
-		local seqData = {name="default", start=1, count=count, time=time}
+		local seqData = {}
+
+		for key, v in pairs(objProperties[k].properties) do
+			if string.find(key, "sequence:") then
+				local sequenceName = string.sub(key, 10)
+				local f = loadstring("return "..v)() -- sequence frames
+				local t = tonumber(objProperties[k].properties[sequenceName..":time"]) or 200 -- sequence time
+				local lc = tonumber(objProperties[k].properties[sequenceName..":loopCount"]) or 0 -- sequence loopcount
+
+				table.insert(seqData, {name = sequenceName, sheet = objSpriteSheet, frames = f, time = t, loopCount = lc})
+			end
+		end
+
+		if #seqData == 0 then
+			seqData = {name="default", start=1, count=count, time=time}
+		end
+
 		local obj = display.newSprite(objSpriteSheet, seqData)
 
 		local objX, objY = objProperties[k].x + obj.width/2, objProperties[k].y + obj.height/2
@@ -40,7 +56,7 @@ scene.loadObjects = function()
 			obj:addEventListener("preCollision")
 	 	end
 
-	 	if objProperties[k].type == "takeble" then
+	 	if objProperties[k].properties.eventName then
 	 		obj.preCollision = scene.takeblePreCollision
 	 		obj.eventName = objProperties[k].properties.eventName
 	 		obj.eventId = objProperties[k].properties.eventId
@@ -55,8 +71,9 @@ end
 
 scene.takeblePreCollision = function(self, event) 
 	if event.other.name == "ben"or event.other.name == "ren" then 
-		self:removeSelf()
-		event.other.jump = 2
+		if self.type == "takeble" then
+			self:removeSelf()
+		end
 
 		local dialogEvent = { name=self.eventName, id=self.eventId }
 		map:dispatchEvent(dialogEvent)

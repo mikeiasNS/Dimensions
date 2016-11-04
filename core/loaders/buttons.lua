@@ -71,16 +71,24 @@ end
 
 buttonsLoader.loadMenuButtons = function ()
 	playBen = widget.newButton{
-		label="Play Ben",
+		label="",
+		defaultFile = "images/play_ben.png",
+		width = display.contentWidth * 0.3,
+		height = display.contentWidth * 0.3,
 		onEvent = playWithBen
 	}
+	playBen.anchorY = 0
 	playBen.x, playBen.y = centerX, centerY - playBen.contentHeight
 
 	playRen = widget.newButton{
-		label="Play Ren",
+		label="",
+		defaultFile = "images/play_ren.png",
+		width = display.contentWidth * 0.3,
+		height = display.contentWidth * 0.3,
 		onEvent = playWithRen
 	}
-	playRen.x, playRen.y = centerX, centerY + playRen.contentHeight
+	playRen.anchorY = 1
+	playRen.x, playRen.y = centerX, centerY + playRen.contentHeight 
 
 	return playBen, playRen
 end

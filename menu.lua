@@ -7,6 +7,11 @@ function scene:create(event)
 
 	local playBen, playRen = loader.loadMenuButtons()
 
+	local whiteRect = display.newRect(display.screenOriginX, display.screenOriginY, display.contentWidth*2, display.contentHeight/2)
+	whiteRect.anchorX, whiteRect.anchorY = 0, 0
+	whiteRect:setFillColor(1, 1, 1)
+
+	sceneGroup:insert(whiteRect)
 	sceneGroup:insert(playBen)
 	sceneGroup:insert(playRen)
 end

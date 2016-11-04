@@ -53,8 +53,8 @@ moves.fire = function(currentChar, event)
 	mte.addSprite(laser, setup)
 	laser.gravityScale = 0
 	laser:setLinearVelocity(velX, 0)
-	laser.collision = moves.onLaserCollision
-	laser:addEventListener("collision")
+	laser.preCollision = moves.onLaserCollision
+	laser:addEventListener("preCollision")
 end
 
 moves.onLaserCollision = function(self, event)
@@ -68,7 +68,7 @@ moves.onLaserCollision = function(self, event)
 			end
 
 			if event.other.name == "crate" then
-				objects["guard"]:removeSelf()
+				moves.killGuard()
 			elseif event.other.name == "chain" then
 				objects["crate"]:setLinearVelocity(0, 300)
 				objects["totemToBen2"]:removeSelf()
@@ -78,6 +78,20 @@ moves.onLaserCollision = function(self, event)
 			end
 		end
 	end
+end
+
+moves.killGuard = function() 
+	objects["guard"]:setSequence("dead")
+	objects["guard"].preCollision = moves.deadGuardPreCollision
+end
+
+moves.deadGuardPreCollision = function(self, event)
+	if event.other.name == "ben" then
+		event.contact.isEnabled = false
+	end
+
+	local event = { name="dialog", id="see_guard_body" }
+	map:dispatchEvent(event)
 end
 
 return moves

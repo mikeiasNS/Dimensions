@@ -660,10 +660,15 @@
     <property name="path" value="images/objects/flag.png"/>
    </properties>
   </object>
-  <object id="69" name="sceneObj" type="guard" x="2984.7" y="1283.17" width="50" height="156">
+  <object id="69" name="sceneObj" type="guard" x="2982.51" y="1234.95" width="74" height="203">
    <properties>
+    <property name="eventId" value="guard_good_morning"/>
+    <property name="eventName" value="dialog"/>
     <property name="name" value="guard"/>
+    <property name="numFrames" value="2"/>
     <property name="path" value="images/objects/guard.png"/>
+    <property name="sequence:alive" value="{1}"/>
+    <property name="sequence:dead" value="{2}"/>
    </properties>
   </object>
   <object id="72" name="sceneObj" type="destructible" x="1476.48" y="2365.43" width="290" height="290">

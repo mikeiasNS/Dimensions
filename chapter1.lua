@@ -16,12 +16,13 @@ local rain
 local currentChar
 local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn
 local OdihnaBG = audio.loadStream("sound/de_boa.mp3")
-local rainSound = audio.loadStream("sound/rain.mp3")
+local rainSound = audio.loadStream("sound/rain.wav")
 local laserSound = audio.loadSound("sound/laser1.wav")
 local destinationObjName
 local hpRect
 local headStatusRect
 local paused = false
+local dialogList = {}
 
 --collision names
 local benName = "ben"
@@ -46,7 +47,6 @@ local function onCharCollision(self, event)
 		destinationObjName = string.match(event.other.name, "B..%d")
 		gateBtn.isVisible = true
 	elseif event.other.name == "death" then
-		print(event.phase)
 		if event.phase == "began" then
 			currentChar.hpBonus = -1
 		else
@@ -98,6 +98,14 @@ function dialogIterator(event)
 end
 
 function dialogListener(event)
+	if util.tableContains(dialogList, event.id) then
+		if paused then
+			playPause()
+		end
+		return
+	end
+
+	table.insert(dialogList, event.id)
 	if not paused then
 		playPause()
 	end
@@ -119,9 +127,12 @@ function dialogListener(event)
 	img1.anchorX = 0
 	img1.x, img1.y = dialogRect.x, dialogRect.y + dialogRect.height / 2
 
-	local img2 = display.newImageRect(dialog.img_two_path, 100, 100)
-	img2.anchorX = 1
-	img2.x, img2.y = dialogRect.width + dialogRect.x, dialogRect.y + dialogRect.height / 2
+	local img2
+	if dialog.img_two_path then
+		img2 = display.newImageRect(dialog.img_two_path, 100, 100)
+		img2.anchorX = 1
+		img2.x, img2.y = dialogRect.width + dialogRect.x, dialogRect.y + dialogRect.height / 2
+	end
 
 	dialogRect.img1 = img1
 	dialogRect.img2 = img2
@@ -142,7 +153,7 @@ function showTextInDlgRect(dlgRect)
 	if #dlgRect.dialog.content >= index then
 		local str = string.sub(dlgRect.dialog.content[index], 6) 
 		local txtX, txtY = dlgRect.x + dlgRect.img1.width + 5, dlgRect.y + 20
-		local txtW = dlgRect.width - (dlgRect.img1.width + dlgRect.img2.width) - 5
+		local txtW = dlgRect.width - (dlgRect.img1.width * 2) - 5
 
 		local text = display.newText(str, txtX, txtY, txtW , 0, native.systemFont)
 		text.anchorX, text.anchorY = 0, 0
@@ -154,7 +165,9 @@ function showTextInDlgRect(dlgRect)
 		if string.sub(dlgRect.dialog.content[index], 1, 4) == "%01%" then 
 			-- 01 speaking
 			dlgRect.img1.alpha = 1
-			dlgRect.img2.alpha = 0.5
+			if dlgRect.img2 then
+				dlgRect.img2.alpha = 0.5
+			end
 		else
 			-- 02 speaking
 			dlgRect.img2.alpha = 1
@@ -162,7 +175,9 @@ function showTextInDlgRect(dlgRect)
 		end
 	else
 		dlgRect.img1:removeSelf()
-		dlgRect.img2:removeSelf()
+		if dlgRect.img2 then
+			dlgRect.img2:removeSelf()
+		end
 		dlgRect:removeSelf()
 		playPause()
 	end
