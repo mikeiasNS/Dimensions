@@ -19,13 +19,13 @@ dialogs["initial_info"] = {
 		"%02% Já lhe demos toda a ajuda que poderiamos lhe dar, agora apenas vá, não perca tempo!"
 	},
 	img_one_path = "images/BheadA.png",
-	img_two_path = "images/RheadB.png",
+	img_two_path = "images/tree.png",
 }
 
 dialogs["see_guard_body"] = {
 	title = "",
 	content = {
-		"%01% Oquê??? O guarda está morto... Não era assim que eu gostaria que fosse...",
+		"%01% O que??? O guarda está morto... Não era assim que eu gostaria que fosse...",
 		"%01% ...Sinto muito."
 	},
 	img_one_path = "images/BheadA.png"
