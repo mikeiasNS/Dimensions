@@ -222,6 +222,11 @@ function scene:create(event)
 	end
 
 	map:addEventListener("dialog", dialogListener)
+    
+    if currentChar.name == renName then
+        local event = { name="dialog", id="ren_initial" }
+        map:dispatchEvent(event)
+    end
 
 	sceneGroup:insert(map)
 	sceneGroup:insert(hpRect)

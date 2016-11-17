@@ -34,10 +34,19 @@ dialogs["see_guard_body"] = {
 dialogs["guard_good_morning"] = {
 	title = "",
 	content = {
-		"%01% Bom dia Ben... Você sabe o que aconteceu? Eu estou meio tonto..."
+		"%02% Bom dia Ben... Você sabe o que aconteceu? Eu estou meio tonto..."
 	},
 	img_one_path = "images/BheadA.png",
 	img_two_path = "images/BheadB.png"
+}
+
+dialogs["ren_initial"] = {
+	title = "",
+	content = {
+		"%01% As trevas de Golgota me sufocam, eu nem sei mais há quanto tempo estou aqui...",
+        "%01% Preciso sair a qualquer custo..."
+	},
+	img_one_path = "images/RheadA.png"
 }
 
 return dialogs

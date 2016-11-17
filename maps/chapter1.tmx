@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="120" tilewidth="32" tileheight="32" nextobjectid="85">
- <tileset firstgid="1" name="ground_elements" tilewidth="32" tileheight="32" spacing="2" margin="1" tilecount="24" columns="6">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="100" height="120" tilewidth="32" tileheight="32" nextobjectid="88">
+ <tileset firstgid="1" name="ground_elements" tilewidth="32" tileheight="32" spacing="2" margin="1">
   <image source="tilesets/ground_elements.png" width="204" height="136"/>
   <tile id="0">
    <properties>
@@ -90,10 +90,10 @@
    </properties>
   </tile>
  </tileset>
- <tileset firstgid="25" name="blue_tree" tilewidth="337" tileheight="390" tilecount="1" columns="1">
+ <tileset firstgid="25" name="blue_tree" tilewidth="337" tileheight="390">
   <image source="tilesets/blue_tree.png" trans="ff00ff" width="337" height="390"/>
  </tileset>
- <tileset firstgid="26" name="red_tree" tilewidth="337" tileheight="390" tilecount="1" columns="1">
+ <tileset firstgid="26" name="red_tree" tilewidth="337" tileheight="390">
   <image source="tilesets/red_tree.png" trans="ff00ff" width="337" height="390"/>
  </tileset>
  <layer name="bluba" width="100" height="120">
@@ -364,6 +364,7 @@
     <property name="name" value="totemToBen2"/>
     <property name="offscreenPhysics" value="true"/>
     <property name="path" value="images/objects/totem.png"/>
+    <property name="rotation" value="180"/>
    </properties>
   </object>
   <object id="68" name="sceneObj" type="endFlag" x="3104.36" y="2369.33" width="92" height="102">
@@ -381,6 +382,7 @@
     <property name="name" value="totemToBen3"/>
     <property name="offscreenPhysics" value="true"/>
     <property name="path" value="images/objects/totem.png"/>
+    <property name="rotation" value="180"/>
    </properties>
   </object>
  </objectgroup>

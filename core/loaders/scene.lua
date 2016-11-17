@@ -62,7 +62,11 @@ scene.loadObjects = function()
 	 		obj.eventId = objProperties[k].properties.eventId
 	 		obj:addEventListener("preCollision")
 	 	end
-
+        
+        if objProperties[k].properties.rotation then
+            obj.rotation = objProperties[k].properties.rotation
+        end
+            
 	 	objects[obj.id] = obj
 	end
 
