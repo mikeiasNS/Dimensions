@@ -69,8 +69,45 @@ scene.loadObjects = function()
             
 	 	objects[obj.id] = obj
 	end
+	scene.loadShapeObjects()
 
 	return objects
+end
+
+scene.loadShapeObjects = function() 
+	local objProperties = mte.getObject({name = "shapeObj"})
+	local shapeObjects = {}
+
+	for k,v in pairs(objProperties) do
+		local w, h = objProperties[k].width, objProperties[k].height
+		local red = objProperties[k].properties.red or "1.0"
+		local green = objProperties[k].properties.green or "1.0"
+		local blue = objProperties[k].properties.blue or "1.0"
+		local alpha = objProperties[k].properties.alpha or "0.0"
+		local id = objProperties[k].properties.id or objProperties[k].properties.name
+		local layer = objProperties[k].layer
+		local bodyType = objProperties[k].properties.bodyType or "static"
+		local bounce = objProperties[k].properties.bounce or 0
+		local density = objProperties[k].properties.density or 0
+
+		local obj = display.newRect(0, 0, w, h)
+
+		local x, y = objProperties[k].x + obj.width/2, objProperties[k].y + obj.height/2
+		local objSetup = {  layer = layer, kind = "sprite", 
+							levelPosX = x, levelPosY = y, 
+							offscreenPhysics = offscreenPhysics  }
+
+		mte.physics.addBody(obj, bodyType, {bounce=bounce, density=density})
+		mte.addSprite(obj, objSetup)
+
+		obj:setFillColor(loadstring("return "..red)(), 
+						loadstring("return "..green)(), 
+						loadstring("return "..blue)())
+		obj.alpha = loadstring("return "..alpha)()
+		obj.name = objProperties[k].properties.name
+	 	obj.type = objProperties[k].type
+	 	obj.id = id
+	end
 end
 
 scene.takeblePreCollision = function(self, event) 

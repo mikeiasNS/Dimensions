@@ -16,26 +16,22 @@ function scene:create(event)
 	sceneGroup:insert(playRen)
 end
 
---destiny > 0 
---	play with ben
---destiny <= 0
---	play with ren
-function play(destiny)
+function play(chapterName)
 	local options = {
 		effect = "fade",
-		time = 1000,
-		params = {destinyId = destiny}
+		time = 200,
+		params = {chapter = chapterName, scene = "chapters.chapter1"}
 	}
 	composer.removeScene("menu")
-	composer.gotoScene("chapter1", options)
+	composer.gotoScene("chapters.chapter0", options)
 end
 
 function playWithBen()
-	play(1)
+	play("Odihna_chapter0")
 end
 
 function playWithRen()
-	play(-1)
+	play("Golgota_chapter1")
 end
 
 function scene:show(event)

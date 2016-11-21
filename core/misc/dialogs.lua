@@ -43,7 +43,7 @@ dialogs["guard_good_morning"] = {
 dialogs["ren_initial"] = {
 	title = "",
 	content = {
-		"%01% As trevas de Golgota me sufocam, eu nem sei mais há quanto tempo estou aqui...",
+		"%01% As trevas de Gólgota me sufocam, eu nem sei mais há quanto tempo estou aqui...",
         "%01% Preciso sair a qualquer custo..."
 	},
 	img_one_path = "images/RheadA.png"

@@ -1,33 +1,34 @@
-local composer = require( "composer" )
-local scene = composer.newScene()
-local widget = require "widget"
+composer = require( "composer" )
+scene = composer.newScene()
+widget = require "widget"
 mte = require("MTE.mte").createMTE()
-local loader = require("core.loaders.loader")
-local util = require("core.misc.utils")
-local constants = require("core.misc.constants")
-local dialogs = require("core.misc.dialogs")
+loader = require("core.loaders.loader")
+util = require("core.misc.utils")
+constants = require("core.misc.constants")
+dialogs = require("core.misc.dialogs")
 
 display.setStatusBar( display.HiddenStatusBar )
 display.setDefault( "magTextureFilter", "nearest" )
 display.setDefault( "minTextureFilter", "nearest" )
 system.activate("multitouch")
-local ben, ren, enemies
-local rain
-local currentChar
-local backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn
-local OdihnaBG = audio.loadStream("sound/de_boa.mp3")
-local rainSound = audio.loadStream("sound/rain.wav")
-local laserSound = audio.loadSound("sound/laser1.wav")
-local destinationObjName
-local hpRect
-local headStatusRect
-local paused = false
-local dialogList = {}
+ben, ren, enemies = nil, nil, nil
+rain = nil
+currentChar = nil
+backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn = nil, nil, nil, nil, nil, nil 
+OdihnaBG = audio.loadStream("sound/de_boa.mp3")
+rainSound = audio.loadStream("sound/rain.wav")
+laserSound = audio.loadSound("sound/laser1.wav")
+destinationObjName = nil
+hpRect = nil
+headStatusRect = nil
+paused = false
+dialogList = {}
+pausedImage, continueButton = nil, nil
 
 --collision names
-local benName = "ben"
-local renName = "ren"
-local groundName = "ground"
+benName = "ben"
+renName = "ren"
+groundName = "ground"
 
 function focusCameraInRen()
 	mte.setCameraFocus(ren, 0, 80)
@@ -37,7 +38,7 @@ function focusCameraInBen()
 	mte.setCameraFocus(ben, 0, -80)
 end
 
-local function onCharCollision(self, event)
+function onCharCollision(self, event)
 	if(event.other.name == groundName and event.phase == "began") then
 		currentChar.jump = 0
 	elseif(string.find(event.other.name, "totem") and event.target.name == benName and event.phase == "began") then
@@ -46,6 +47,8 @@ local function onCharCollision(self, event)
 	elseif(string.find(event.other.name, "totem") and event.target.name == renName and event.phase == "began") then
 		destinationObjName = string.match(event.other.name, "B..%d")
 		gateBtn.isVisible = true
+	elseif(string.find(event.other.name, "totem") and event.phase == "ended") then
+		gateBtn.isVisible = false
 	elseif event.other.name == "death" then
 		if event.phase == "began" then
 			currentChar.hpBonus = -1
@@ -57,7 +60,7 @@ local function onCharCollision(self, event)
 	end
 end
 
-local function setupStatus()
+function setupStatus()
 	if hpRect ~= nil then
 		hpRect:removeSelf()
 		headStatusRect:removeSelf()
@@ -99,9 +102,7 @@ end
 
 function dialogListener(event)
 	if util.tableContains(dialogList, event.id) then
-		if paused then
-			playPause()
-		end
+		--dialog already started
 		return
 	end
 
@@ -178,64 +179,10 @@ function showTextInDlgRect(dlgRect)
 		if dlgRect.img2 then
 			dlgRect.img2:removeSelf()
 		end
+
 		dlgRect:removeSelf()
 		playPause()
 	end
-end
-
-function scene:create(event)
-	local sceneGroup = self.view
-
-	--ENABLE PHYSICS -----------------------------------------------------------------------
-	mte.enableBox2DPhysics()
-	mte.physics.start()
-	--mte.physics.setDrawMode("hybrid")
-
-	--LOAD SCENE -----------------------------------------------------------------------------
-	loader.loadMap("maps/chapter1")
-	mte.drawObjects()
-	rain = loader.loadUpSideRain()
-	objects = loader.loadObjects()
-
-	--LOAD CHARS ---------------------------------------------------------------------------
-	ren = loader.loadRen("Ren")
-	ren.collision = onCharCollision
-	ren:addEventListener("collision")
-	ren.name = renName
-
-	ben = loader.loadBen("Ben")
-	ben.collision = onCharCollision
-	ben:addEventListener("collision")
-	ben.name = benName
-
-	backBtn, aheadBtn, jumpBtn, attackBtn, gateBtn, pauseBtn = loader.loadButtons()
-	gateBtn.isVisible = false
-
-	currentChar = util.setInitialWorld(event.params.destinyId, ben, ren)
-	mte.update()
-	setupStatus()
-
-	enemies = loader.loadEnemies()
-
-	for k,v in pairs(objects) do
-		objects[k].gravityScale = 0
-	end
-
-	map:addEventListener("dialog", dialogListener)
-    
-    if currentChar.name == renName then
-        local event = { name="dialog", id="ren_initial" }
-        map:dispatchEvent(event)
-    end
-
-	sceneGroup:insert(map)
-	sceneGroup:insert(hpRect)
-	sceneGroup:insert(aheadBtn)
-	sceneGroup:insert(backBtn)
-	sceneGroup:insert(jumpBtn)
-	sceneGroup:insert(attackBtn)
-	sceneGroup:insert(gateBtn)
-	sceneGroup:insert(pauseBtn)
 end
 
 function goAhead(event)
@@ -273,9 +220,22 @@ function playPause(event)
 		currentChar:setSequence("stoppedBack")
 	end
 
+	if event then
+		if not paused then
+			pausedImage = display.newImage("images/paused.png")
+			pausedImage.x, pausedImage.y = display.contentCenterX, display.contentCenterY
+			pausedImage.width = display.contentWidth
+			continueButton = widget.newButton({defaultFile="images/continue.png", x=pausedImage.x, y=pausedImage.y+10, onEvent=playPause})
+		elseif pausedImage then
+			pausedImage:removeSelf()
+			continueButton:removeSelf()
+		end
+	end
+
 	paused = not paused
 	backBtn:setEnabled(not paused)
 	aheadBtn:setEnabled(not paused)
+	pauseBtn:setEnabled(not paused)
 	jumpBtn:setEnabled(not paused)
 	attackBtn:setEnabled(not paused)
 	gateBtn:setEnabled(not paused)
@@ -314,6 +274,17 @@ function handleMove(event)
 	end
 end
 
+function scene:create(event)
+	local sceneGroup = self.view
+	local options = {
+		params = event.params
+	}
+
+	print(handleMove)
+	composer.removeScene("chapter0")
+	composer.gotoScene("loader", options)
+end
+
 function scene:show(event)
 	local sceneGroup = self.view
 	local phase = event.phase
@@ -338,14 +309,6 @@ function scene:destroy(event)
 	scene:removeEventListener("hide", scene)
 	scene:removeEventListener("destroy", scene)
 	Runtime:removeEventListener("enterFrame", handleMove)
-	Runtime:removeEventListener(constants.eventNames.worldChanged, onWorldChanged)
-	backBtn:removeSelf()
-	jumpBtn:removeSelf()
-	aheadBtn:removeSelf()
-	headStatusRect:removeSelf()
-	hpRect:removeSelf()
-	backBtn, jumpBtn, aheadBtn = nil, nil, nil
-	timer.performWithDelay(500, mte.cleanup)
 end
 
 -- Listener setup
@@ -353,7 +316,5 @@ scene:addEventListener("create", scene)
 scene:addEventListener("show", scene)
 scene:addEventListener("hide", scene)
 scene:addEventListener("destroy", scene)
-Runtime:addEventListener("enterFrame", handleMove)
-Runtime:addEventListener(constants.eventNames.worldChanged, onWorldChanged)
 
 return scene
