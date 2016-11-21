@@ -119,7 +119,7 @@ util.die = function (rain)
 		time = 500,
 		params = {}
 	}
-	composer.removeScene("chapter1")
+	composer.removeScene("chapters.chapter1")
 	composer.gotoScene("gameover", options)
 end
 
@@ -133,7 +133,7 @@ util.restart = function (rain)
 		time = 500,
 		params = {}
 	}
-	composer.removeScene("chapter1")
+	composer.removeScene("chapters.chapter1")
 	composer.gotoScene("menu", options)
 end
 

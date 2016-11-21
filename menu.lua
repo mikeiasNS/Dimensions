@@ -20,14 +20,14 @@ function play(chapterName)
 	local options = {
 		effect = "fade",
 		time = 200,
-		params = {chapter = chapterName, scene = "chapters.chapter1"}
+		params = { chapter = chapterName, scene = "chapters.chapter1" }
 	}
 	composer.removeScene("menu")
 	composer.gotoScene("chapters.chapter0", options)
 end
 
 function playWithBen()
-	play("Odihna_chapter0")
+	play("Odihna_chapter1")
 end
 
 function playWithRen()

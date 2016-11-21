@@ -12,7 +12,7 @@ chars.loadBen = function (objName)
 	}
 
 	local ben = display.newSprite(spriteSheet, sequenceData)
-	local setup = {layer = 6, kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
+	local setup = {layer = mte.getSpriteLayer(1), kind = "sprite", levelPosX = benProperties[1].x, levelPosY = benProperties[1].y}	
 	mte.physics.addBody(ben, "dynamic", {friction = 0.2, bounce = 0.0, density = 1})
 	ben.isFixedRotation = true
 	mte.addSprite(ben, setup)
@@ -37,7 +37,7 @@ chars.loadRen = function (objName)
 	}
 
 	local ren = display.newSprite(renSpriteSheet, renSequenceData)
-	local renSetup = {layer = 3, kind = "sprite", levelPosX = renProperties[1].x, levelPosY = renProperties[1].y}	
+	local renSetup = {layer = mte.getSpriteLayer(1), kind = "sprite", levelPosX = renProperties[1].x, levelPosY = renProperties[1].y}	
 	mte.physics.addBody(ren, "dynamic", {friction = 0.2, bounce = 0.0, density = 2 })
 	ren.isFixedRotation = true
 	mte.addSprite(ren, renSetup)

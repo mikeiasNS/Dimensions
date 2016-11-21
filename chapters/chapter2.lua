@@ -6,7 +6,7 @@ function scene:create(event)
 	--mte.physics.setDrawMode("hybrid")
 
 	--LOAD SCENE -----------------------------------------------------------------------------
-	loader.loadMap("maps/chapter1")
+	loader.loadMap("maps/chapter2")
 	mte.drawObjects()
 	rain = loader.loadUpSideRain()
 	objects = loader.loadObjects()

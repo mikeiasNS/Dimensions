@@ -4,6 +4,10 @@ scene.loadObjects = function()
 	local objProperties = mte.getObject({name = "sceneObj"})
 	local objects = {}
 
+	if not objProperties then
+		return objects
+	end
+
 	for k,v in pairs(objProperties) do
 
 		local w, h = objProperties[k].width, objProperties[k].height
@@ -78,6 +82,10 @@ scene.loadShapeObjects = function()
 	local objProperties = mte.getObject({name = "shapeObj"})
 	local shapeObjects = {}
 
+	if not objProperties then
+		return
+	end
+
 	for k,v in pairs(objProperties) do
 		local w, h = objProperties[k].width, objProperties[k].height
 		local red = objProperties[k].properties.red or "1.0"
@@ -138,8 +146,12 @@ scene.loadMap = function (mapPath)
 	mte.constrainCamera()
 	mte.addPropertyListener("name", scene.onNameProperty)
 
-	local backdrop = display.newImageRect(mapPath .. "BG.png", 3200, 3840)
-	local setup = {layer = 1, levelWidth = 3200, levelHeight = 3840, kind = "imageRect", locX=50.5, locY=60.5}
+	local bgW, bgH = mte.getMap().width * 32, mte.getMap().height * 32
+	local bgx, bgy = mte.getMap().width / 2 + 0.5, mte.getMap().height / 2 + 0.5
+	print("bg", bgW, bgH )
+
+	local backdrop = display.newImageRect(mapPath .. "BG.png", bgW, bgH)
+	local setup = {layer = 1, levelWidth = bgW, levelHeight = bgH, kind = "imageRect", locX=bgx, locY=bgy}
 	mte.addSprite(backdrop, setup)
 end
 

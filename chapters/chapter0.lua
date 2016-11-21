@@ -24,6 +24,8 @@ headStatusRect = nil
 paused = false
 dialogList = {}
 pausedImage, continueButton = nil, nil
+currentChapter = 1
+mainWorld = "Odihna"
 
 --collision names
 benName = "ben"
@@ -52,12 +54,26 @@ function onCharCollision(self, event)
 	elseif event.other.name == "death" then
 		if event.phase == "began" then
 			currentChar.hpBonus = -1
-		else
+		elseif event.phase == "ended" then
 			currentChar.hpBonus = 0
 		end
 	elseif string.find(event.other.name, "end") then
 		util.restart(rain)
+	elseif string.find(event.other.name, "nextChapter") then
+		nextChapter()
 	end
+end
+
+function nextChapter() 
+	composer.removeScene("chapters.chapter"..currentChapter)
+	currentChapter = currentChapter + 1
+
+	local options = {
+		effect = "fade",
+		time = 200,
+		params = {chapter = mainWorld.."_chapter"..currentChapter, scene = "chapters.chapter"..currentChapter}
+	}
+	composer.gotoScene("loader", options)
 end
 
 function setupStatus()
@@ -257,7 +273,7 @@ function onWorldChanged(event)
 	end
 end
 
-function handleMove(event)	
+function handleMove(event)
 	mte.update()
 	setupStatus()
 
@@ -276,13 +292,6 @@ end
 
 function scene:create(event)
 	local sceneGroup = self.view
-	local options = {
-		params = event.params
-	}
-
-	print(handleMove)
-	composer.removeScene("chapter0")
-	composer.gotoScene("loader", options)
 end
 
 function scene:show(event)
@@ -291,6 +300,16 @@ function scene:show(event)
 	
 	if phase == "will" then
 	elseif phase == "did" then
+		local options = {
+			params = event.params
+		}
+
+		if string.find( event.params.chapter, "Golgota" ) then 
+			mainWorld = "Golgota"
+		end
+
+		composer.removeScene("chapters.chapter0")
+		composer.gotoScene("loader", options)
 	end
 end
 
@@ -303,12 +322,10 @@ function scene:hide(event)
 end
 
 function scene:destroy(event)
-	--package.loaded[physics] = nil		
 	scene:removeEventListener("create", scene)
 	scene:removeEventListener("show", scene)
 	scene:removeEventListener("hide", scene)
 	scene:removeEventListener("destroy", scene)
-	Runtime:removeEventListener("enterFrame", handleMove)
 end
 
 -- Listener setup
